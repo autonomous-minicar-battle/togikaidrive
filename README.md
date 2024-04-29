@@ -1,9 +1,7 @@
 # togikaidrive
 走行用のメインプログラム
 
-## タスク
-1. runを書く　済
-2. PIDをいれる　済
+## タスク（事務局用）
 3. MLをPytorchに書き換え（train、test）
 4. 可視化（操作ｖｓセンサ値、カメラ画像）jupyternotebook用意する
 5. 画像処理、CNNコンテンツ追加
@@ -48,14 +46,18 @@
 
 ## ハードウェア
 ### 制限部門貸し出しマシン
+![制限部門のマシン](/assets/car_onemake/car_seigenbumon.png)
+
+#### BOM
+
 | 分類 | 名称 | 個数 | 概算コスト(円) | 説明 |
 | ---- | ---- | ---- | ---- | ---- |
-| コンピュータ | [ラズパイ3B+](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/) |1| ---- |
+| コンピュータ | [ラズパイ3B+](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/) |1| ---- |　販売終了
 | コンピュータ | [ラズパイ3A](https://raspberry-pi.ksyic.com/main/index/pdp.id/512/pdp.open/512) |-| 5000 |（代替）|
 | コンピュータ | [ラズパイ4B](https://akizukidenshi.com/catalog/g/g114839/) |-| 10000 |（代替）|
-| SDカード | 配布時期による |1| 64GB以上、書き込み速度30MB/s以上推奨 |
+| SDカード | 配布時期による |1| ---- | 64GB以上、書き込み速度30MB/s以上推奨 |
 | 距離センサ | [超音波距離センサー HC-SR04](https://akizukidenshi.com/catalog/g/g111009/) |5| 1500 |
-| カメラ | [ラズベリー•パイ（Raspberry Pi）160°広角500MP](https://jp.sainsmart.com/products/wide-angle-fov160-5-megapixel-camera-module-for-raspberry-pi) |任意| 3000 |
+| カメラ | [ラズベリー•パイ（Raspberry Pi）160°広角500MP](https://jp.sainsmart.com/products/wide-angle-fov160-5-megapixel-camera-module-for-raspberry-pi) |任意| 3000 |　コース内特徴を捉えるため、広角推奨。
 | シャーシ | [RCスターユニット 1/14 エアロ アバンテ](https://tamiyashop.jp/shop/g/g57402/) |1| 6500 |
 | モーター | シャーシに含む |1| ---- |
 | コンピュータ用バッテリ | [Anker PowerCore Fusion 5000](https://amzn.asia/d/b78Zim4) |1| 3600 |
@@ -72,8 +74,9 @@
 | ケーブル | ジャンパワイヤ　メス-メス |1| 1000| サーボドライバ用 |
 | togikai基盤 | --- |任意|  HC-SR04用の5V->3.3Vレベルシフタ等搭載 |
 
-
-## ラズパイのセットアップ
+#### 組み立てマニュアル
+　ココに入れる
+#### ラズパイのセットアップ
 1. OS:[2021-01-11-raspios-buster-i386.iso](https://downloads.raspberrypi.com/rpd_x86/images/rpd_x86-2021-01-12/2021-01-11-raspios-buster-i386.iso)
 2. Raspberry [Pi Imager](https://www.raspberrypi.com/software/)を使ってSDカードへ書き込み
 3. [togikaidrive](https://github.com/autonomous-minicar-battle/togikaidrive.git)をgit cloneする
@@ -81,10 +84,29 @@
 
 
 ## ツール類
-- エディター：[VS](https://code.visualstudio.com/) 
+### エディター
+
+   - エディター：[VS Code](https://code.visualstudio.com/) 
+      - [GitHub Copilot](https://github.com/github/copilot-preview) AIによるコード補完機能で、プログラミング作業を効率化する拡張機能。
+      - [SFTP](https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp)ファイル転送用拡張機能。[参考](https://note.com/_nakashimmer_/n/nd10a5acc6f43)
+
 - コード管理：[Git](https://git-scm.com/) 
 - コード配布：[GitHub](https://github.com/) 
  - GUIでファイル転送：[Filezilla](https://filezilla-project.org/)
-- []()
 
-　
+### HP作成
+- WEBデザイン作成：[Figma](https://www.figma.com/) 
+
+   オンラインのデザインツールです。UI/UXデザインやプロトタイプ作成に使用されます。Figmaを使用すると、複数のユーザーが同時に作業できるため、チームでの協力が容易になります。
+
+- WEBサイト作成ノーコードツール：[Studio](https://studio.design/ja) 
+
+   Figmaで作ったデザインをインポートする。[参考](https://studio.design/ja/figma-to-studio)
+- ヘッドレスCMS：[microCMS](https://microcms.io/) 
+
+   microCMSはAPIベースのヘッドレスCMSです。StudioとAPI連携させてDB管理。今後の拡張用のために採用。
+
+#### 作成の流れ
+   Figmaでデザイン作成➔StudioでWEBフレームワークに変換し、公開。
+   DBの管理はmicroCMSを使う。　昨年までStudioだけで作成していたが、デザイン修正が大変であったためFigmaを、DBの拡張性のためmicroCMSを使いたい。
+   
