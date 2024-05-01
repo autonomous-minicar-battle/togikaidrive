@@ -79,6 +79,7 @@ Ncategory = 5
 #ultrasonics_list = ["FrLH","Fr","FrRH"]
 ### ５つ使う場合はこちらをコメントアウト外す
 ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
+#ultrasonics_list = ["RrRH"] #, "Fr","FrRH","RrRH"]
 
 ## 超音波センサの測定回数、ultrasonic.pyチェック用
 sampling_times = 100
@@ -92,16 +93,21 @@ ultrasonics_Nrecords = 5
 ## !!!超音波センサ初期設定、配線を変えない限り触らない
 ### GPIOピン番号の指示方法
 GPIO.setmode(GPIO.BOARD)
-### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
-t_list=[15,13,35,32,36]
-GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
+
 ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
-e_list=[26,24,37,31,38]
+#e_list=[26,24,37,31,38]
+e_list=[11,13,15,29,31,33,35,37] #new board
 GPIO.setup(e_list,GPIO.IN)
+### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
+#t_list=[15,13,35,32,36]
+t_list=[12,16,18,22,32,36,38,40] #new board 
+GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
 
 ## !!!超音波センサ初期設定、配線を変えない限り触らない
-ultrasonics_dict_trig = {"Fr":t_list[0], "FrLH":t_list[1], "RrLH":t_list[2], "FrRH":t_list[3], "RrRH":t_list[4]} 
-ultrasonics_dict_echo = {"Fr":e_list[0], "FrLH":e_list[1], "RrLH":e_list[2], "FrRH":e_list[3], "RrRH":e_list[4]} 
+#ultrasonics_dict_trig = {"Fr":t_list[2], "FrLH":t_list[1], "RrLH":t_list[0], "FrRH":t_list[3], "RrRH":t_list[4]} # new board
+#ultrasonics_dict_echo = {"Fr":e_list[2], "FrLH":e_list[1], "RrLH":e_list[0], "FrRH":e_list[3], "RrRH":e_list[4]} # new board
+ultrasonics_dict_trig = {"Fr":t_list[0], "FrRH":t_list[1], "FrLH":t_list[2], "RrRH":t_list[3], "RrLH":t_list[4]} 
+ultrasonics_dict_echo = {"Fr":e_list[0], "FrRH":e_list[1], "FrLH":e_list[2], "RrRH":e_list[3], "RrLH":e_list[4]} 
 N_ultrasonics = len(ultrasonics_list)
 ## !!!
 
@@ -111,8 +117,10 @@ motor_Nrecords = 5
 
 ## PWMピンのチャンネル
 ## !!!配線を変えない限り触らない
-CHANNEL_STEERING = 14
-CHANNEL_THROTTLE = 13
+#CHANNEL_STEERING = 14
+#CHANNEL_THROTTLE = 13
+CHANNEL_STEERING = 14 #new board
+CHANNEL_THROTTLE = 13 #new board
 
 ## 操舵のPWM値
 STEERING_CENTER_PWM = 360

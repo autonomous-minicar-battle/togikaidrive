@@ -107,12 +107,13 @@ try:
         if joystick.breaking:
             motor.breaking()
 
-        ## 記録と出力（タイムスタンプと距離データを配列に記録）
-        ts =  time.perf_counter()-start_time
+        ## 記録（タイムスタンプと距離データを配列に記録）
+        ts =  time.perf_counter()
+        ts_run =  round(ts-start_time,2)
         if recording:
             d_stack = np.vstack((d_stack, np.insert(d, 0, [ts, steer_pwm_duty, throttle_pwm_duty]),))
         ## 全体の状態を出力      
-        print("*Rec:",recording,"Time:",ts,"Str:",steer_pwm_duty,"Thr:",throttle_pwm_duty,message) #,end=' , '
+        print("*Rec:",recording, "*Mode:",joystick.mode[0],"*RunTime:",ts_run ,"*Str:",steer_pwm_duty,"*Thr:",throttle_pwm_duty,message) #,end=' , '
 
         # 停止処理 ＃
         plan.Stop(ultrasonics["Fr"])
