@@ -15,7 +15,7 @@ import multiprocessing
 # データ記録用配列作成
 d = np.zeros(config.N_ultrasonics)
 print(d)
-d_stack = np.zeros(config.N_ultrasonics+1)
+d_stack = np.zeros(config.N_ultrasonics+3)
 print(d_stack)
 recording = True
 
@@ -62,10 +62,6 @@ try:
             message += name + ":" + str(round(ultrasonics[name].dis,2))+ ", "
             # サンプリングレートを調整する場合は下記をコメントアウト外す
             #time.sleep(sampling_cycle)
-        ## 記録と出力（タイムスタンプと距離データを配列に記録）
-        if recording:
-            d_stack = np.vstack((d_stack, np.insert(d, 0, time.perf_counter()-start_time)))
-        print(message)
 
         # 判断（プランニング）＃
         # 使う超音波センサをconfig.pyのultrasonics_listで設定必要
@@ -106,12 +102,18 @@ try:
         ## モータードライバーに出力をセット
         motor.set_steer_pwm_duty(steer_pwm_duty)        
         motor.set_throttle_pwm_duty(throttle_pwm_duty)  
-        ## 全体の状態を出力      
-        print("Rec:",recording,"Str:",steer_pwm_duty,"Thr:",throttle_pwm_duty,end=' , ')
 
         ## ブレーキ
         if joystick.breaking:
             motor.breaking()
+
+        ## 記録（タイムスタンプと距離データを配列に記録）
+        ts =  time.perf_counter()
+        ts_run =  round(ts-start_time,2)
+        if recording:
+            d_stack = np.vstack((d_stack, np.insert(d, 0, [ts, steer_pwm_duty, throttle_pwm_duty]),))
+        ## 全体の状態を出力      
+        print("*Rec:",recording, "*Mode:",joystick.mode[0],"*RunTime:",ts_run ,"*Str:",steer_pwm_duty,"*Thr:",throttle_pwm_duty,message) #,end=' , '
 
         # 停止処理 ＃
         plan.Stop(ultrasonics["Fr"])
@@ -127,7 +129,7 @@ try:
 
     # 終了処理
     GPIO.cleanup()
-    header =""
+    header ="Time Thr Str "
     for name in config.ultrasonics_list:
         header += name + " "        
     np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
@@ -138,7 +140,7 @@ except KeyboardInterrupt:
     motor.set_throttle_pwm_duty(config.STOP)
     print('\nユーザーにより停止')
     GPIO.cleanup()
-    header =""
+    header ="Time Thr Str"
     for name in config.ultrasonics_list:
         header += name + " "        
     np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
