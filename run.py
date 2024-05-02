@@ -3,21 +3,26 @@ import os
 import RPi.GPIO as GPIO
 import time
 import numpy as np
+import sys
 
+print("ライブラリの初期化に数秒かかります...")
 import config
 import ultrasonic
 import motor
 import planner
 import joystick
-import multiprocessing
-
+import camera_multiprocess
 
 # データ記録用配列作成
 d = np.zeros(config.N_ultrasonics)
-print(d)
 d_stack = np.zeros(config.N_ultrasonics+3)
-print(d_stack)
 recording = True
+
+# 画像保存
+#running = Value("b", True)
+print("Start taking pictures in ",config.image_dir)
+cam = camera_multiprocess.VideoCaptureWrapper(0)
+print("【 ◎*】Capture started! \n")
 
 # 操舵、駆動モーターの初期化
 motor = motor.Motor()
@@ -47,7 +52,7 @@ input()
 motor.set_throttle_pwm_duty(config.STOP)
 
 # 開始時間
-start_time = time.perf_counter()
+start_time = time.time()
 
 # ここから走行用プログラム
 try:
@@ -108,12 +113,16 @@ try:
             motor.breaking()
 
         ## 記録（タイムスタンプと距離データを配列に記録）
-        ts =  time.perf_counter()
+        ts =  time.time()
         ts_run =  round(ts-start_time,2)
         if recording:
             d_stack = np.vstack((d_stack, np.insert(d, 0, [ts, steer_pwm_duty, throttle_pwm_duty]),))
+            ### 画像保存 ret:カメラ認識、img：画像
+            ret, img = cam.read()
+            cam.save(img, ts, steer_pwm_duty, throttle_pwm_duty, config.image_dir)
+
         ## 全体の状態を出力      
-        print("*Rec:",recording, "*Mode:",joystick.mode[0],"*RunTime:",ts_run ,"*Str:",steer_pwm_duty,"*Thr:",throttle_pwm_duty,message) #,end=' , '
+        print("*Rec:",recording, "*Mode:",joystick.mode[0],"*RunTime:",ts_run ,"*Str:",steer_pwm_duty,"*Thr:",throttle_pwm_duty," ", message) #,end=' , '
 
         # 停止処理 ＃
         plan.Stop(ultrasonics["Fr"])
@@ -129,12 +138,15 @@ try:
 
     # 終了処理
     GPIO.cleanup()
-    header ="Time Thr Str "
+    header ="Tstamp Str Thr "
     for name in config.ultrasonics_list:
         header += name + " "        
-    np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
+    np.savetxt(config.record_filename, d_stack[1:],  fmt='%10.7f', header=header, comments="")
+    #np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
     print('記録停止')
     print("記録保存--> ",config.record_filename)
+    print("画像保存--> ",config.image_dir)
+
 except KeyboardInterrupt:
     motor.set_steer_pwm_duty(config.NUTRAL)
     motor.set_throttle_pwm_duty(config.STOP)
@@ -143,6 +155,8 @@ except KeyboardInterrupt:
     header ="Time Thr Str"
     for name in config.ultrasonics_list:
         header += name + " "        
-    np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
+    np.savetxt(config.record_filename, d_stack[1:],  fmt='%10.7f', header=header, comments="")
+    #np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
     print('記録停止')
     print("記録保存--> ",config.record_filename)
+    print("画像保存--> ",config.image_dir)

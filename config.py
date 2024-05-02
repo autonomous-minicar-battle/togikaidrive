@@ -42,7 +42,7 @@ K_I = 0.0 #0.0
 K_D = 0.3 #0.3
 
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
-# #JOYSTICK from donkeycar
+# コントローラー（ジョイスティックの設定）
 CONTROLLER = True
 JOYSTICK_STEERING_SCALE = -1.0       #some people want a steering that is less sensitve. This scalar is multiplied with the steering -1 to 1. It can be negative to reverse dir.
 JOYSTICK_THROTTLE_SCALE = -1.0       #some people want a throttle that is less sensitve. 
@@ -66,6 +66,16 @@ JOYSTICK_AXIS_LEFT = 0 #ステアリング（左右）
 JOYSTICK_AXIS_RIGHT = 4 #スロットル（上下）
 JOYSTICK_HAT_LR = 0
 JOYSTICK_HAT_DU = 1
+
+# カメラの設定
+IMAGE_W = 160
+IMAGE_H = 120
+IMAGE_DEPTH = 3         # default RGB=3, make 1 for mono
+CAMERA_FRAMERATE = 20 #DRIVE_LOOP_HZ
+CAMERA_VFLIP = False
+CAMERA_HFLIP = False
+IMSHOW = False #　画像を表示するか
+
 
 # NNパラメータ
 Nnode = 3
@@ -141,6 +151,7 @@ THROTTLE_REVERSE_PWM = 250
 THROTTLE_WIDTH_PWM = 80
 
 # 走行記録
+## 測定データ
 records = "records"
 if not os.path.exists(records):
     # ディレクトリが存在しない場合、ディレクトリを作成する
@@ -149,3 +160,13 @@ if not os.path.exists(records):
 ## 記録したcsvファイル名
 record_filename = './'+records+'/record_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
+## 画像
+images = "images"
+if not os.path.exists(images):
+    # ディレクトリが存在しない場合、ディレクトリを作成する
+    os.makedirs(images)
+    print("make dir as ",images)
+## 記録するフォルダ名
+image_dir = './'+images+'/image_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+os.makedirs(image_dir)
+print("make dir as ",image_dir)
