@@ -12,6 +12,19 @@ import motor
 import planner
 import joystick
 import camera_multiprocess
+import multiprocessing
+from multiprocessing import Process
+
+img_sh = multiprocessing.sharedctypes.RawArray('i', config.img_size[0]*config.img_size[1]*config.img_size[2])
+if config.fpv:
+    import fpv
+    server = Process(target = fpv.run, args = img_sh, kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
+    server.start()
+   #fpv.run(host='localhost', port=config.port, debug=False, threaded=True)
+
+while True:
+    print (fpv.frame)
+    #pass
 
 # データ記録用配列作成
 d = np.zeros(config.N_ultrasonics)
@@ -50,6 +63,8 @@ input()
 # 途中でモータースイッチを切り替えたとき用に再度モーター初期化
 # 初期化に成功するとピッピッピ！と３回音がなる、失敗時（PWMの値で約370-390以外の値が入りっぱなし）はピ...ピ...∞
 motor.set_throttle_pwm_duty(config.STOP)
+
+# fpv
 
 # 開始時間
 start_time = time.time()
@@ -137,11 +152,11 @@ try:
             break
 
     # 終了処理
-    GPIO.cleanup()
+    config.GPIO.cleanup()
     header ="Tstamp Str Thr "
     for name in config.ultrasonics_list:
         header += name + " "        
-    np.savetxt(config.record_filename, d_stack[1:],  fmt='%10.7f', header=header, comments="")
+    np.savetxt(config.record_filename, d_stack[1:],  fmt='%10.2f', header=header, comments="")
     #np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
     print('記録停止')
     print("記録保存--> ",config.record_filename)
@@ -151,11 +166,11 @@ except KeyboardInterrupt:
     motor.set_steer_pwm_duty(config.NUTRAL)
     motor.set_throttle_pwm_duty(config.STOP)
     print('\nユーザーにより停止')
-    GPIO.cleanup()
+    config.GPIO.cleanup()
     header ="Time Thr Str"
     for name in config.ultrasonics_list:
         header += name + " "        
-    np.savetxt(config.record_filename, d_stack[1:],  fmt='%10.7f', header=header, comments="")
+    np.savetxt(config.record_filename, d_stack[1:],  fmt='%10.2f', header=header, comments="")
     #np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
     print('記録停止')
     print("記録保存--> ",config.record_filename)

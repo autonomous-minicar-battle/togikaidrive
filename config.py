@@ -1,5 +1,6 @@
 # coding:utf-8
 import RPi.GPIO as GPIO
+GPIO.setwarnings(False)
 import datetime
 import os
 
@@ -161,6 +162,7 @@ if not os.path.exists(records):
 record_filename = './'+records+'/record_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
 ## 画像
+img_size = (120, 160, 3)
 images = "images"
 if not os.path.exists(images):
     # ディレクトリが存在しない場合、ディレクトリを作成する
@@ -170,3 +172,7 @@ if not os.path.exists(images):
 image_dir = './'+images+'/image_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 os.makedirs(image_dir)
 print("make dir as ",image_dir)
+
+# FPV 下記のport番号
+fpv = True
+port = 8910

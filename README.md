@@ -56,7 +56,8 @@
 | コンピュータ | [ラズパイ3A](https://raspberry-pi.ksyic.com/main/index/pdp.id/512/pdp.open/512) |-| 5000 |（代替）|
 | コンピュータ | [ラズパイ4B](https://akizukidenshi.com/catalog/g/g114839/) |-| 10000 |（代替）|
 | SDカード | 配布時期による |1| ---- | 64GB以上、書き込み速度30MB/s以上推奨 |
-| 距離センサ | [超音波距離センサー HC-SR04](https://akizukidenshi.com/catalog/g/g111009/) |5| 1500 |
+| 距離センサ | [超音波距離センサー HC-SR04](https://akizukidenshi.com/catalog/g/g111009/) |5| 1500 | [データシート](https://akizukidenshi.com/goodsaffix/hc-sr04_v20.pdf)
+| ジャイロ加速度センサ | [BNO055使用 9軸センサーフュージョンモジュールキット](https://akizukidenshi.com/catalog/g/g116996/) |任意| 2500 | [データシート](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bno055-ds000.pdf)
 | カメラ | [ラズベリー•パイ（Raspberry Pi）160°広角500MP](https://jp.sainsmart.com/products/wide-angle-fov160-5-megapixel-camera-module-for-raspberry-pi) |任意| 3000 |　コース内特徴を捉えるため、広角推奨。
 | シャーシ | [RCスターユニット 1/14 エアロ アバンテ](https://tamiyashop.jp/shop/g/g57402/) |1| 6500 |
 | モーター | シャーシに含む |1| ---- |
@@ -72,7 +73,7 @@
 | マウント | 超音波センサマウント |1| 500| 材料費のみ換算 |
 | ケーブル | ジャンパワイヤ　メス-オス |5| 1000| 超音波センサ用 |
 | ケーブル | ジャンパワイヤ　メス-メス |1| 1000| サーボドライバ用 |
-| togikai基盤 | --- |任意|  HC-SR04用の5V->3.3Vレベルシフタ等搭載 |
+| togikai基盤 | --- |任意|  HC-SR04*8個接続ピン・ PCA9685 2ch・OLED搭載、秋月BNO055モジュール追加搭載可能 |
 
 #### 組み立てマニュアル
 　ココに入れる
@@ -80,12 +81,13 @@
 1. OS:[2021-01-11-raspios-buster-i386.iso](https://downloads.raspberrypi.com/rpd_x86/images/rpd_x86-2021-01-12/2021-01-11-raspios-buster-i386.iso)
 2. Raspberry [Pi Imager](https://www.raspberrypi.com/software/)を使ってSDカードへ書き込み
 3. [togikaidrive](https://github.com/autonomous-minicar-battle/togikaidrive.git)をgit cloneする
-4. ライブラリ類
-   1. opencv
+4. パスワードなしSSHログイン：[参考](https://qiita.com/Ash_root/items/143f7f21373f43127da6)
+5. ライブラリ類
+   1. [OpenCV](https://opencv.org/)
       1. sudo apt install python3-opencv
-
-
-
+   2. [Flask](https://msiz07-flask-docs-ja.readthedocs.io/ja/latest/)
+      1. pip install Flask
+   
 
 ## ツール類
 ### エディター

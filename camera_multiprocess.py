@@ -69,6 +69,8 @@ def _get_information(args: tuple):
 class VideoCaptureWrapper:
 
     def __init__(self, *args) -> None:
+        self.currentframe = None
+
         # キャプチャデバイスの情報取得
         self.__shape = _get_information(args)
         height, width, channels = self.__shape
@@ -91,7 +93,8 @@ class VideoCaptureWrapper:
     # フレームの取得
     def read(self):
         self.__ready.wait()
-        return cast(bool, True), np.reshape(self.__buffer, self.__shape).copy()
+        self.currentframe = np.reshape(self.__buffer, self.__shape).copy()
+        return cast(bool, True), self.currentframe
 
     # キャプチャの解放
     def release(self):
@@ -109,9 +112,11 @@ class VideoCaptureWrapper:
         except:
             pass
 
-    def save(self, img, ts, steer, throttle,  image_dir):
+    def save(self, img, img_sh, ts, steer, throttle,  image_dir):
         try:
-            cv2.imwrite(image_dir +'/' + str(ts) +'_'+ str(steer) +'_'+ str(throttle) +'.jpg', img)            
+            cv2.imwrite(image_dir +'/' + str(ts)[:13] +'_'+ str(steer) +'_'+ str(throttle) +'.jpg', img)            
+            #img = cv2.resize(img, (160, 120))
+            #img_sh[:] = img.flatten()
             return img
         except:
             print("Cannot save image!")
@@ -122,14 +127,19 @@ if __name__ == "__main__":
     # カメラを使ってVideoCaptureWrapperを作成
     video_capture = VideoCaptureWrapper(0)
     _, img = video_capture.read()
+    img = cv2.resize(img, (160, 120))
     # 一枚だけ保存
-    video_capture.save(img, time(), "steerpwm", "throttlepwm", ".")
+    #video_capture.save(img, time(), "steerpwm", "throttlepwm", ".")
 
     try:
+        while True:
+            print(video_capture.currentframe)
+
         # メインループ
         while True:
             start_time = perf_counter()
             _, img = video_capture.read()
+            img = cv2.resize(img, (160, 120))
             #print(img)
             print(perf_counter() - start_time)
             try:
