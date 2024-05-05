@@ -44,8 +44,8 @@ motor.set_steer_pwm_duty(config.NUTRAL)
 motor.set_throttle_pwm_duty(config.STOP)
 
 # 超音波センサの初期化
-# 別々にインスタンス化する例　ultrasonic_RrLH = ultrasonic.Ultrasonic("RrLH")
-# 一気にインスタンス化
+## 別々にインスタンス化する例　ultrasonic_RrLH = ultrasonic.Ultrasonic("RrLH")
+## 一気にnameに"RrLH"等をultrasonics_listから入れてインスタンス化
 ultrasonics = {name: ultrasonic.Ultrasonic(name=name) for name in config.ultrasonics_list}
 print(" 下記の", config.N_ultrasonics,"個の超音波センサを利用")
 print(" ", config.ultrasonics_list)
@@ -75,7 +75,7 @@ motor.set_throttle_pwm_duty(config.STOP)
 # 開始時間
 start_time = time.time()
 
-# ここから走行用プログラム
+# ここから走行ループ
 try:
     while True:
         # 認知（計測） ＃
@@ -145,7 +145,7 @@ try:
         ## 全体の状態を出力      
         print("*Rec:",recording, "*Mode:",joystick.mode[0],"*RunTime:",ts_run ,"*Str:",steer_pwm_duty,"*Thr:",throttle_pwm_duty," ", message) #,end=' , '
 
-        # 停止処理 ＃
+        ## 停止操作（簡便のため、判断も同時に実施） 
         plan.Stop(ultrasonics["Fr"])
         if plan.flag_stop ==True:
             ## 停止動作
@@ -168,6 +168,7 @@ try:
     print("記録保存--> ",config.record_filename)
     print("画像保存--> ",config.image_dir)
 
+# Ctr-C時の終了処理
 except KeyboardInterrupt:
     motor.set_steer_pwm_duty(config.NUTRAL)
     motor.set_throttle_pwm_duty(config.STOP)
