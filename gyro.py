@@ -1,9 +1,29 @@
 import smbus
 import time
 import struct
+from chkprint import chkprint
+
+class IMU():
+	def __init__(self):
+		print("Using IMU unit: ",end = "")
+		self.unit = None
+		# angle はsensor fusionでの推定値
+		self.angle = 0.0
+		## angle ノイズ除去用
+		self.angle_pre = 0.0
+		# センサ取得値
+		self.acc = {"x":0.0, "y":0.0, "z":0.0}
+		self.gyr = {"x":0.0, "y":0.0, "z":0.0}
+		# 積分計算値
+		self.vel = {"x":0.0, "y":0.0, "z":0.0}
+		self.pos = {"x":0.0, "y":0.0, "z":0.0}
+		self.rot = {"x":0.0, "y":0.0, "z":0.0}
+		# 周回フラグ
+		self.lap = 0
+
 
 # Modifiy from https://github.com/ghirlekar/bno055-python-i2c.git, MIT lisence
-class BNO055:
+class BNO055(IMU):
 	BNO055_ADDRESS_A 				= 0x28
 	BNO055_ADDRESS_B 				= 0x29
 	BNO055_ID 		 			= 0xA0
@@ -186,9 +206,18 @@ class BNO055:
 
 
 	def __init__(self, sensorId=-1, address=0x28):
+		super().__init__()
+		print("BNO055, 9axis senser fusion module")
 		self._sensorId = sensorId
 		self._address = address
 		self._mode = BNO055.OPERATION_MODE_NDOF
+
+		print(" Please wait for few secs to initialize...")
+		if self.begin(self._mode) is not True:
+			print("Error initializing device")
+			exit()
+		time.sleep(1)
+		self.setExternalCrystalUse(True)
 
 
 	def begin(self, mode=None):
@@ -290,22 +319,59 @@ class BNO055:
 	def writeBytes(self, register, byteVals):
 		return self._bus.write_i2c_block_data(self._address, register, byteVals)
 
+	def Measure(self):
+		self.angle = self.getVector(self.VECTOR_EULER)[0]
+		for i,axis in enumerate(self.acc):
+			self.acc[axis] = self.getVector(self.VECTOR_ACCELEROMETER)[i]
+			self.gyr[axis] = self.getVector(self.VECTOR_GYROSCOPE)[i]
 
+		return self.angle, self.acc, self.gyr
 
+	def Convert_angle_plusminus180(self):
+		# -180°~180°に変換
+		if self.angle >180:
+			self.angle = self.angle -360
+
+	def Filter_angle(self):
+		if self.angle > self.angle_pre + 7:
+			print("Noise on angle value, using previous value ", end="")
+			self.angle = self.angle_pre
+			print("  >> 角度[°]:{}".format(self.angle))
+		else: self.angle_pre = self.angle
+
+	def Measure_set(self):
+		# 上記３つを実行
+		self.angle = self.getVector(self.VECTOR_EULER)[0]
+		for i,axis in enumerate(self.acc):
+			self.acc[axis] = self.getVector(self.VECTOR_ACCELEROMETER)[i]
+			self.gyr[axis] = self.getVector(self.VECTOR_GYROSCOPE)[i]
+		if self.angle >180:
+			self.angle = self.angle -360
+		if self.angle > self.angle_pre + 7:
+			self.angle = self.angle_pre
+		else: self.angle_pre = self.angle
+
+		return self.angle, self.acc, self.gyr
+		
 
 if __name__ == '__main__':
-	bno = BNO055()
-	if bno.begin() is not True:
-		print("Error initializing device")
-		exit()
-	time.sleep(1)
-	#bno.setExternalCrystalUse(True)
-	ini = bno.getVector(BNO055.VECTOR_EULER)
+	#　imu インスタンス化
+	imu = BNO055()
+	# 計測ループ
 	while True:
+		angle, acc, gyr = imu.Measure()
+		# -180°~180°に変換
+		imu.Convert_angle_plusminus180()
+		print("加速度[m/s^2]:{2} 角度[°]:{0}  角速度[°/s]:{1}".format(angle, gyr, acc))
+		# angleには8°のノイズが乗るので除去
+		imu.Filter_angle()
+		time.sleep(0.1)
+
+"""
 		#print(bno.getVector(BNO055.VECTOR_EULER))
 		#print(int(ini[0]) - int(bno.getVector(BNO055.VECTOR_EULER)[0]))
 		print(bno.getVector(BNO055.VECTOR_GYROSCOPE))
 		#print(bno.getVector(BNO055.VECTOR_ACCELEROMETER))
 
-		time.sleep(0.05)
 
+"""

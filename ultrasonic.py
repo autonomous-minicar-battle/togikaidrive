@@ -14,7 +14,7 @@ class Ultrasonic:
         self.dis = 0
 
     # 障害物センサ測定関数
-    def Mesure(self):
+    def Measure(self):
         self.dis = 0
         sigoff = 0
         sigon = 0
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         for i in range(sampling_times):
             message = ""
             for j in range(len(ultrasonics)):
-                dis = ultrasonics[j].Mesure()
+                dis = ultrasonics[j].Measure()
                 #距離データを配列に記録
                 d[j] = dis
                 #表示用にprint変更

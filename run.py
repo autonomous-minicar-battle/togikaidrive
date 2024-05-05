@@ -49,6 +49,11 @@ ultrasonics = {name: ultrasonic.Ultrasonic(name=name) for name in config.ultraso
 print(" 下記の", config.N_ultrasonics,"個の超音波センサを利用")
 print(" ", config.ultrasonics_list)
 
+#　imu インスタンス化
+imu = BNO055()
+## 計測例
+## angle, acc, gyr = imu.Measure_set()
+
 # 操作判断プランナーの初期化
 plan = planner.Planner("NoName")
 
@@ -73,11 +78,11 @@ start_time = time.time()
 try:
     while True:
         # 認知（計測） ＃
-        ## RrRHセンサ距離計測例：dis_RrRH = ultrasonic_RrRH.Mesure()
+        ## RrRHセンサ距離計測例：dis_RrRH = ultrasonic_RrRH.()
         ## 下記では一気に取得
         message = ""
         for i, name in enumerate(config.ultrasonics_list):
-            d[i] = ultrasonics[name].Mesure()
+            d[i] = ultrasonics[name].Measure()
             #message += name + ":" + str(round(ultrasonics[name].dis,2)).rjust(7, ' ') #Thony表示用にprint変更
             message += name + ":" + str(round(ultrasonics[name].dis,2))+ ", "
             # サンプリングレートを調整する場合は下記をコメントアウト外す
