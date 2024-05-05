@@ -14,16 +14,17 @@ import joystick
 import camera_multiprocess
 import multiprocessing
 from multiprocessing import Process
+import gyro
 
-img_sh = multiprocessing.sharedctypes.RawArray('i', config.img_size[0]*config.img_size[1]*config.img_size[2])
-if config.fpv:
-    import fpv
-    server = Process(target = fpv.run, args = img_sh, kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
-    server.start()
+#img_sh = multiprocessing.sharedctypes.RawArray('i', config.img_size[0]*config.img_size[1]*config.img_size[2])
+#if config.fpv:
+#    import fpv
+#    server = Process(target = fpv.run, args = img_sh, kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
+#    server.start()
    #fpv.run(host='localhost', port=config.port, debug=False, threaded=True)
 
-while True:
-    print (fpv.frame)
+#while True:
+#    print (fpv.frame)
     #pass
 
 # データ記録用配列作成
@@ -50,7 +51,7 @@ print(" 下記の", config.N_ultrasonics,"個の超音波センサを利用")
 print(" ", config.ultrasonics_list)
 
 #　imu インスタンス化
-imu = BNO055()
+imu = gyro.BNO055()
 ## 計測例
 ## angle, acc, gyr = imu.Measure_set()
 

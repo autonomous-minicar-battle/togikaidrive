@@ -112,7 +112,8 @@ class VideoCaptureWrapper:
         except:
             pass
 
-    def save(self, img, img_sh, ts, steer, throttle,  image_dir):
+    #def save(self, img, img_sh, ts, steer, throttle,  image_dir):
+    def save(self, img,  ts, steer, throttle,  image_dir):
         try:
             cv2.imwrite(image_dir +'/' + str(ts)[:13] +'_'+ str(steer) +'_'+ str(throttle) +'.jpg', img)            
             #img = cv2.resize(img, (160, 120))
