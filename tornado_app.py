@@ -38,7 +38,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
     def loop(self):
         self.ioloop.add_timeout(time.time() + 0.1, self.loop)
         frame = CaptureVideo.get_frame()
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY),90]
+        #
+        frame = cv2.resize(frame, (160, 120))
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY),100]
         ret, decimg = cv2.imencode('.jpg', frame, encode_param)
         if self.ws_connection:
             if ret:

@@ -26,14 +26,28 @@ class Planner:
         self.K_D = config.K_D
         self.min_dis = 0
 
-        #　停止判断フラグ
+        #　判断フラグ
         self.flag_stop = False
+        self.flag_back = False
         # 操作値出力
         self.message = ""
         # 過去の操作値記録回数
         self.records_steer_pwm_duty = np.zeros(config.motor_Nrecords)
         self.records_throttle_pwm_duty = np.zeros(config.motor_Nrecords)
 
+
+    # 前側１センサーを用いた後退
+    def Back(self, ultrasonic_Fr):
+    ## 目前に前壁をtimes回検知
+        times = 1
+        # elifではなく、別のif文として評価
+        if max(ultrasonic_Fr.records[:times]) < self.DETECTION_DISTANCE_Back:
+            self.message = "後退"
+            self.flag_back = True
+        elif max(ultrasonic_Fr.records[:times]) > self.DETECTION_DISTANCE_Back:
+            self.message = "前進"
+            self.flag_back = False  
+            print(self.message)
 
     # 前側１センサーを用いた停止
     def Stop(self, ultrasonic_Fr):
@@ -43,7 +57,6 @@ class Planner:
                 self.message = "停止"
                 self.flag_stop = True                
                 print(self.message)
-
 
     # 前側３センサーを用いた右左走行
     def Right_Left_3(self, dis_FrLH, dis_Fr, dis_FrRH):

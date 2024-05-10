@@ -6,6 +6,7 @@ import cv2
 import camera_multiprocess
 
 app = Flask(__name__)
+data_sh = []
 
 # "/" を呼び出したときには、indexが表示される。
 @app.route('/')
@@ -13,9 +14,11 @@ def index():
     return render_template('index.html')
 
 def gen(camera):
+    global data_sh
     while True:
         #frame = camera.get_frame()
         frame = camera.get_frame_multi()
+        print("print data_sh:",data_sh)
         #print(frame)
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
@@ -29,11 +32,11 @@ def gen(camera):
 def video_feed():
     return Response(gen(VideoCamera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
-
-def run(**kwargs):
-    app.run(**kwargs)
-    #return frame
-    
+def run(*args ,**kwargs):
+    global data_sh
+    data_sh.append(args)
+    print("print data_sh:",data_sh)
+    app.run(**kwargs)    
 
 class VideoCamera(object):
     def __init__(self):
@@ -55,6 +58,7 @@ class VideoCamera(object):
 
     def get_frame_multi(self):
         success, image = self.video.read()
+        #image = cv2.resize(image, (160, 120))
         ret, jpeg = cv2.imencode('.jpg', image)
         return jpeg.tobytes()
 

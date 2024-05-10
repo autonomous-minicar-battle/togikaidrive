@@ -37,6 +37,9 @@ model_plan_list = ["Right_Left_3","Right_Left_3_Records","RightHand","RightHand_
 # 判断結果出力、Thonyのplotterを使うならFalse
 print_plan_result = False
 
+# 復帰モード選択
+mode_recovery = "Back" #None, Back, Stop
+
 ## PIDパラメータ(PDまでを推奨)
 K_P = 0.7 #0.7
 K_I = 0.0 #0.0

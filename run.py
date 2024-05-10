@@ -16,11 +16,14 @@ import multiprocessing
 from multiprocessing import Process
 import gyro
 
-#img_sh = multiprocessing.sharedctypes.RawArray('i', config.img_size[0]*config.img_size[1]*config.img_size[2])
-#if config.fpv:
-#    import fpv
-#    server = Process(target = fpv.run, args = img_sh, kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
-#    server.start()
+if config.fpv:
+    #img_sh = multiprocessing.sharedctypes.RawArray('i', config.img_size[0]*config.img_size[1]*config.img_size[2])
+    data_sh = multiprocessing.sharedctypes.RawArray('i', (2,3))
+    import fpv
+    #server = Process(target = fpv.run,  kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
+    server = Process(target = fpv.run,  args = data_sh, kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
+    #server = Process(target = fpv.run, args = img_sh, kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
+    server.start()
    #fpv.run(host='localhost', port=config.port, debug=False, threaded=True)
 
 #while True:
@@ -34,9 +37,13 @@ recording = True
 
 # 画像保存
 #running = Value("b", True)
-print("Start taking pictures in ",config.image_dir)
-cam = camera_multiprocess.VideoCaptureWrapper(0)
-print("【 ◎*】Capture started! \n")
+if not config.fpv:
+    print("Start taking pictures in ",config.image_dir)
+    cam = camera_multiprocess.VideoCaptureWrapper(0)
+    print("【 ◎*】Capture started! \n")
+    #cam.__buffer
+
+
 
 # 操舵、駆動モーターの初期化
 motor = motor.Motor()
@@ -56,7 +63,7 @@ imu = gyro.BNO055()
 ## angle, acc, gyr = imu.Measure_set()
 
 # 操作判断プランナーの初期化
-plan = planner.Planner("NoName")
+plan = planner.Planner(config.mode_plan)
 
 # コントローラーの初期化
 if config.CONTROLLER:
@@ -139,23 +146,41 @@ try:
         if recording:
             d_stack = np.vstack((d_stack, np.insert(d, 0, [ts, steer_pwm_duty, throttle_pwm_duty]),))
             ### 画像保存 ret:カメラ認識、img：画像
-            ret, img = cam.read()
-            cam.save(img, ts, steer_pwm_duty, throttle_pwm_duty, config.image_dir)
+            if not config.fpv:
+                ret, img = cam.read()
+                cam.save(img, ts, steer_pwm_duty, throttle_pwm_duty, config.image_dir)
 
         ## 全体の状態を出力      
         print("*Rec:",recording, "*Mode:",joystick.mode[0],"*RunTime:",ts_run ,"*Str:",steer_pwm_duty,"*Thr:",throttle_pwm_duty," ", message) #,end=' , '
 
-        ## 停止操作（簡便のため、判断も同時に実施） 
-        plan.Stop(ultrasonics["Fr"])
-        if plan.flag_stop ==True:
-            ## 停止動作
-            motor.set_steer_pwm_duty(config.NUTRAL)
-            motor.set_throttle_pwm_duty(config.STOP)
-            time.sleep(0.05)
-            motor.set_throttle_pwm_duty(config.REVERSE)
-            time.sleep(0.05)
-            motor.set_throttle_pwm_duty(config.STOP)
-            break
+        ## 後退/停止操作（簡便のため、判断も同時に実施） 
+        if config.mode_recovery == "None"
+            pass
+
+        else config.mode_recovery == "Back"  
+            ### 後退
+            plan.Back(ultrasonics["Fr"])
+            if plan.flag_back == True:
+                motor.set_steer_pwm_duty(config.NUTRAL)
+                motor.set_throttle_pwm_duty(config.REVERSE)
+                time.sleep(0.9)
+            else: 
+                pass
+
+        elif config.mode_recovery == "Stop"
+            ### 停止
+            plan.Stop(ultrasonics["Fr"])
+            if plan.flag_stop ==True:
+                ## 停止動作
+                motor.set_steer_pwm_duty(config.NUTRAL)
+                motor.set_throttle_pwm_duty(config.STOP)
+                time.sleep(0.05)
+                motor.set_throttle_pwm_duty(config.REVERSE)
+                time.sleep(0.05)
+                motor.set_throttle_pwm_duty(config.STOP)
+                print("一時停止、Enterを押して走行再開!")
+                input()
+                #break
 
     # 終了処理
     config.GPIO.cleanup()

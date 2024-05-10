@@ -133,16 +133,16 @@ if __name__ == "__main__":
     #video_capture.save(img, time(), "steerpwm", "throttlepwm", ".")
 
     try:
-        while True:
-            print(video_capture.currentframe)
+        # チェック用
+        #while True:
+        #    print(video_capture.currentframe)
 
         # メインループ
         while True:
             start_time = perf_counter()
             _, img = video_capture.read()
-            img = cv2.resize(img, (160, 120))
-            #print(img)
-            print(perf_counter() - start_time)
+            #img = cv2.resize(img, (160, 120))
+            print( "fps:" + str(round(1/(perf_counter() - start_time))))
             try:
                 #cv2.imshow("window", img)
                 #cv2.waitKey(1)
