@@ -1,28 +1,69 @@
 import smbus
 import time
 import struct
+from copy import deepcopy
 from chkprint import chkprint
 
 class IMU():
 	def __init__(self):
 		print("Using IMU unit: ",end = "")
 		self.unit = None
+		self.start_time = time.perf_counter()
+		self.end_time = time.perf_counter()
 		# angle はsensor fusionでの推定値
+		## 角度[°]
 		self.angle = 0.0
 		## angle ノイズ除去用
 		self.angle_pre = 0.0
-		# センサ取得値
-		self.acc = {"x":0.0, "y":0.0, "z":0.0}
-		self.gyr = {"x":0.0, "y":0.0, "z":0.0}
+
+		# センサ取得値　deepcopyでaccの形で各値を持つ
+		## 加速度[m/s^2]
+		#self.acc = {"x":0.0, "y":0.0, "z":0.0}
+		## 配列で保持する過去の値
+		self.mem = 3
+		self.acc = {"x":[0.] *self.mem, "y":[0.]*self.mem, "z":[0.]*self.mem}
+		## 角速度[°/s]
+		self.gyr = deepcopy(self.acc)
+
+		# 微分計算値
+		## 加加速度[m/s^3]
+		self.jerk = deepcopy(self.acc)
+		## 角加速度[°/s^2]
+		self.angular_velocity = deepcopy(self.acc)
+
 		# 積分計算値
-		self.vel = {"x":0.0, "y":0.0, "z":0.0}
-		self.pos = {"x":0.0, "y":0.0, "z":0.0}
-		self.rot = {"x":0.0, "y":0.0, "z":0.0}
+		self.velocity = deepcopy(self.acc)
+		self.position = deepcopy(self.acc)
+		self.rotation = deepcopy(self.acc)
+
 		# 周回フラグ
 		self.lap = 0
 
+		# ジャイロを使った動的制御パラメ
+		## Gthr:スロットル（前後方向）のゲイン、Gstr:ステアリング（横方向）のゲインと発火用フラグ
+		self.Gthr = 1.
+		self.Gstr = 0.
+		self.Gthr_flag = 0
+		self.Gstr_flag = 0
+		## 基準回転速度
+		self.rotation_speed = 1 # °/s
+		## GV用
+		self.Gxc = 1.
+		self.Cxy = 1.
+		self.Ts = 1.
 
-# Modifiy from https://github.com/ghirlekar/bno055-python-i2c.git, MIT lisence
+	# カウンターステア制御
+	def GCounter(self):
+		self.Gstr = min(1, abs(sum(self.gyr["z"])/len(self.gyr["z"]))/self.rotation_speed)
+		return self.Gstr
+	
+	# 横Gスロットル制御 
+	def GVectoring(self):
+		self.Gxc = abs((self.acc["y"][-1] * self.jerk["y"][-1]) * self.Cxy/( 1 + self.Ts) * abs(self.jerk["y"][-1]))
+		self.Gthr = min(1, self.Gxc)
+		return self.Gthr
+
+# Modified from https://github.com/ghirlekar/bno055-python-i2c.git, MIT lisence
 class BNO055(IMU):
 	BNO055_ADDRESS_A 				= 0x28
 	BNO055_ADDRESS_B 				= 0x29
@@ -204,7 +245,6 @@ class BNO055(IMU):
 
 	# REGISTER DEFINITION END
 
-
 	def __init__(self, sensorId=-1, address=0x28):
 		super().__init__()
 		print("BNO055, 9axis senser fusion module")
@@ -319,39 +359,61 @@ class BNO055(IMU):
 	def writeBytes(self, register, byteVals):
 		return self._bus.write_i2c_block_data(self._address, register, byteVals)
 
-	def Measure(self):
+	def measure(self):
+		# 単位時間
+		self.end_time = time.perf_counter()
+		dt = self.end_time - self.start_time
+
+		# 角度推定値取得
 		self.angle = self.getVector(self.VECTOR_EULER)[0]
+		# 値取得
+		acc_tmp = self.getVector(self.VECTOR_ACCELEROMETER)
+		gyr_tmp = self.getVector(self.VECTOR_GYROSCOPE)
+
+		# 記録
 		for i,axis in enumerate(self.acc):
-			self.acc[axis] = self.getVector(self.VECTOR_ACCELEROMETER)[i]
-			self.gyr[axis] = self.getVector(self.VECTOR_GYROSCOPE)[i]
+			self.acc[axis].append(acc_tmp[i])
+			self.acc[axis].pop(0)
+			self.gyr[axis].append(gyr_tmp[i])
+			self.gyr[axis].pop(0)
+			# 微分値計算
+			self.jerk[axis].append(self.acc[axis][-1]-self.acc[axis][-2]/dt)
+			self.jerk[axis].pop(0)
+			self.angular_velocity[axis].append(self.gyr[axis][-1]-self.gyr[axis][-2]/dt)
+			self.angular_velocity[axis].pop(0)
+		self.start_time = time.perf_counter()
+		return self.angle, acc_tmp, gyr_tmp
 
-		return self.angle, self.acc, self.gyr
-
-	def Convert_angle_plusminus180(self):
+	def convert_angle_plusminus180(self):
 		# -180°~180°に変換
 		if self.angle >180:
 			self.angle = self.angle -360
 
-	def Filter_angle(self):
+	def filter_angle(self):
 		if self.angle > self.angle_pre + 7:
 			print("Noise on angle value, using previous value ", end="")
 			self.angle = self.angle_pre
 			print("  >> 角度[°]:{}".format(self.angle))
 		else: self.angle_pre = self.angle
 
-	def Measure_set(self):
-		# 上記３つを実行
-		self.angle = self.getVector(self.VECTOR_EULER)[0]
-		for i,axis in enumerate(self.acc):
-			self.acc[axis] = self.getVector(self.VECTOR_ACCELEROMETER)[i]
-			self.gyr[axis] = self.getVector(self.VECTOR_GYROSCOPE)[i]
-		if self.angle >180:
-			self.angle = self.angle -360
-		if self.angle > self.angle_pre + 7:
-			self.angle = self.angle_pre
-		else: self.angle_pre = self.angle
+	def measure_set(self):
+		self.angle, acc_tmp, gyr_tmp = self.measure()
+		self.convert_angle_plusminus180()
+		self.filter_angle()
+		return self.angle, acc_tmp, gyr_tmp
 
-		return self.angle, self.acc, self.gyr
+		# 上記３つを実行
+		#self.angle = self.getVector(self.VECTOR_EULER)[0]
+		#for i,axis in enumerate(self.acc):
+		#	self.acc[axis] = self.getVector(self.VECTOR_ACCELEROMETER)[i]
+		#	self.gyr[axis] = self.getVector(self.VECTOR_GYROSCOPE)[i]
+		#if self.angle >180:
+		#	self.angle = self.angle -360
+		#if self.angle > self.angle_pre + 7:
+		#	self.angle = self.angle_pre
+		#else: self.angle_pre = self.angle
+
+		#return self.angle, self.acc, self.gyr
 		
 
 if __name__ == '__main__':
@@ -359,12 +421,13 @@ if __name__ == '__main__':
 	imu = BNO055()
 	# 計測ループ
 	while True:
-		angle, acc, gyr = imu.Measure()
+		angle, acc, gyr = imu.measure()
 		# -180°~180°に変換
-		imu.Convert_angle_plusminus180()
-		print("加速度[m/s^2]:{2} 角度[°]:{0}  角速度[°/s]:{1}".format(angle, gyr, acc))
+		imu.convert_angle_plusminus180()
+		print("加速度[m/s^2]:{2} 角度[°]:{0}  角速度-z[°/s]:{1}".format(angle, imu.gyr["z"], acc))
 		# angleには8°のノイズが乗るので除去
-		imu.Filter_angle()
+		#imu.filter_angle()
+		print("Gstr: ",imu.GCounter())
 		time.sleep(0.1)
 
 """

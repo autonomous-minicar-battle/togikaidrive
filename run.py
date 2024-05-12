@@ -47,8 +47,8 @@ if not config.fpv:
 
 # 操舵、駆動モーターの初期化
 motor = motor.Motor()
-motor.set_steer_pwm_duty(config.NUTRAL)
 motor.set_throttle_pwm_duty(config.STOP)
+motor.set_steer_pwm_duty(config.NUTRAL)
 
 # 超音波センサの初期化
 ## 別々にインスタンス化する例　ultrasonic_RrLH = ultrasonic.Ultrasonic("RrLH")
@@ -60,7 +60,7 @@ print(" ", config.ultrasonics_list)
 #　imu インスタンス化
 imu = gyro.BNO055()
 ## 計測例
-## angle, acc, gyr = imu.Measure_set()
+## angle, acc, gyr = imu.measure_set()
 
 # 操作判断プランナーの初期化
 plan = planner.Planner(config.mode_plan)
@@ -90,7 +90,7 @@ try:
         ## 下記では一気に取得
         message = ""
         for i, name in enumerate(config.ultrasonics_list):
-            d[i] = ultrasonics[name].Measure()
+            d[i] = ultrasonics[name].measure()
             #message += name + ":" + str(round(ultrasonics[name].dis,2)).rjust(7, ' ') #Thony表示用にprint変更
             message += name + ":" + str(round(ultrasonics[name].dis,2))+ ", "
             # サンプリングレートを調整する場合は下記をコメントアウト外す
@@ -132,9 +132,24 @@ try:
                 recording = True
             else: 
                 recording = False
+
+        ## 補正（動的制御）
+        ## Gthr:スロットル（前後方向）のゲイン、Gstr:ステアリング（横方向）のゲイン
+        ## ヨー角の角速度でオーバーステア/スリップに対しカウンターステア 
+        if config.mode_plan == "GCounter":
+            imu.GCounter()
+        ## ヨー角の角速度でスロットル調整 
+        ## 未実装
+        #elif config.mode_plan == "GVectoring":
+        #    imu.GVectoring()
+        else: 
+            pass
+
         ## モータードライバーに出力をセット
-        motor.set_steer_pwm_duty(steer_pwm_duty)        
-        motor.set_throttle_pwm_duty(throttle_pwm_duty)  
+        motor.set_throttle_pwm_duty(throttle_pwm_duty * (1 - 2 * imu.Gthr))
+        motor.set_steer_pwm_duty(steer_pwm_duty * (1 - 2 * imu.Gstr))        
+        #motor.set_throttle_pwm_duty(throttle_pwm_duty)  
+        #motor.set_steer_pwm_duty(steer_pwm_duty)        
 
         ## ブレーキ
         if joystick.breaking:
@@ -154,20 +169,20 @@ try:
         print("*Rec:",recording, "*Mode:",joystick.mode[0],"*RunTime:",ts_run ,"*Str:",steer_pwm_duty,"*Thr:",throttle_pwm_duty," ", message) #,end=' , '
 
         ## 後退/停止操作（簡便のため、判断も同時に実施） 
-        if config.mode_recovery == "None"
+        if config.mode_recovery == "None":
             pass
 
-        else config.mode_recovery == "Back"  
+        elif config.mode_recovery == "Back":  
             ### 後退
             plan.Back(ultrasonics["Fr"])
             if plan.flag_back == True:
-                motor.set_steer_pwm_duty(config.NUTRAL)
                 motor.set_throttle_pwm_duty(config.REVERSE)
+                motor.set_steer_pwm_duty(config.NUTRAL)
                 time.sleep(0.9)
             else: 
                 pass
 
-        elif config.mode_recovery == "Stop"
+        elif config.mode_recovery == "Stop":
             ### 停止
             plan.Stop(ultrasonics["Fr"])
             if plan.flag_stop ==True:
@@ -195,8 +210,8 @@ try:
 
 # Ctr-C時の終了処理
 except KeyboardInterrupt:
-    motor.set_steer_pwm_duty(config.NUTRAL)
     motor.set_throttle_pwm_duty(config.STOP)
+    motor.set_steer_pwm_duty(config.NUTRAL)
     print('\nユーザーにより停止')
     config.GPIO.cleanup()
     header ="Time Thr Str"

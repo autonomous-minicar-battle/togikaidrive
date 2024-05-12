@@ -18,6 +18,7 @@ class Planner:
         self.DETECTION_DISTANCE_FrLH = config.DETECTION_DISTANCE_FrLH
         self.DETECTION_DISTANCE_FrRH = config.DETECTION_DISTANCE_FrRH
         self.DETECTION_DISTANCE_STOP = config.DETECTION_DISTANCE_STOP
+        self.DETECTION_DISTANCE_BACK = config.DETECTION_DISTANCE_BACK
         self.DETECTION_DISTANCE_TARGET = config.DETECTION_DISTANCE_TARGET
         self.DETECTION_DISTANCE_RANGE = config.DETECTION_DISTANCE_RANGE
         # PID用パラメータと
@@ -41,10 +42,10 @@ class Planner:
     ## 目前に前壁をtimes回検知
         times = 1
         # elifではなく、別のif文として評価
-        if max(ultrasonic_Fr.records[:times]) < self.DETECTION_DISTANCE_Back:
+        if max(ultrasonic_Fr.records[:times]) < self.DETECTION_DISTANCE_BACK:
             self.message = "後退"
             self.flag_back = True
-        elif max(ultrasonic_Fr.records[:times]) > self.DETECTION_DISTANCE_Back:
+        elif max(ultrasonic_Fr.records[:times]) > self.DETECTION_DISTANCE_BACK:
             self.message = "前進"
             self.flag_back = False  
             print(self.message)

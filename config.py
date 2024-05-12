@@ -19,6 +19,7 @@ RIGHT = -100 #<=100
 ## 距離関連、単位はmm
 ### 前壁の停止/検知距離
 DETECTION_DISTANCE_STOP = 60
+DETECTION_DISTANCE_BACK = 60
 DETECTION_DISTANCE_Fr = 150
 ### 右左折判定基準距離
 DETECTION_DISTANCE_RL = 150
@@ -31,19 +32,21 @@ DETECTION_DISTANCE_TARGET = 180 #目標距離
 DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
 
 # 判断モード選択
-#　選択肢："Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"
+##　選択肢："Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"
 mode_plan = "Right_Left_3"
 model_plan_list = ["Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"]
-# 判断結果出力、Thonyのplotterを使うならFalse
+## 判断結果出力、Thonyのplotterを使うならFalse
 print_plan_result = False
-
-# 復帰モード選択
-mode_recovery = "Back" #None, Back, Stop
-
 ## PIDパラメータ(PDまでを推奨)
 K_P = 0.7 #0.7
 K_I = 0.0 #0.0
 K_D = 0.3 #0.3
+
+# 復帰モード選択
+mode_recovery = "Back" #None, Back, Stop
+
+# 動的制御モード選択
+mode_dynamic_control = "GCounter" #GVectoring
 
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
 # コントローラー（ジョイスティックの設定）
