@@ -18,8 +18,8 @@ RIGHT = -100 #<=100
 # 超音波センサの検知パラメータ 
 ## 距離関連、単位はmm
 ### 前壁の停止/検知距離
-DETECTION_DISTANCE_STOP = 60
-DETECTION_DISTANCE_BACK = 60
+DETECTION_DISTANCE_STOP = 80
+DETECTION_DISTANCE_BACK = 80
 DETECTION_DISTANCE_Fr = 150
 ### 右左折判定基準距離
 DETECTION_DISTANCE_RL = 150
@@ -50,7 +50,7 @@ mode_dynamic_control = "GCounter" #GVectoring
 
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
 # コントローラー（ジョイスティックの設定）
-CONTROLLER = True
+CONTROLLER = True #True
 JOYSTICK_STEERING_SCALE = -1.0       #some people want a steering that is less sensitve. This scalar is multiplied with the steering -1 to 1. It can be negative to reverse dir.
 JOYSTICK_THROTTLE_SCALE = -1.0       #some people want a throttle that is less sensitve. 
 #AUTO_RECORD_ON_THROTTLE = False      #if true, we will record whenever throttle is not zero. if false, you must manually toggle recording with some other trigger. Usually circle button on joystick.
@@ -136,8 +136,8 @@ motor_Nrecords = 5
 ## !!!配線を変えない限り触らない
 #CHANNEL_STEERING = 14
 #CHANNEL_THROTTLE = 13
-CHANNEL_STEERING = 14 #new board
-CHANNEL_THROTTLE = 13 #new board
+CHANNEL_STEERING = 1 #new board
+CHANNEL_THROTTLE = 0 #new board
 
 ## 操舵のPWM値
 STEERING_CENTER_PWM = 360
@@ -152,8 +152,8 @@ STEERING_LEFT_PWM_LIMIT = 250
 ## アクセルのPWM値(motor.pyで調整した後値を入れる)
 ## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
 THROTTLE_STOPPED_PWM = 390
-THROTTLE_FORWARD_PWM = 430
-THROTTLE_REVERSE_PWM = 250
+THROTTLE_FORWARD_PWM = 540
+THROTTLE_REVERSE_PWM = 320
 ### 設定不要
 THROTTLE_WIDTH_PWM = 80
 
@@ -180,5 +180,6 @@ os.makedirs(image_dir)
 print("make dir as ",image_dir)
 
 # FPV 下記のport番号
-fpv = True
+## fpvがONの時は画像保存なし
+fpv = False #True
 port = 8910

@@ -1,34 +1,30 @@
 # coding:utf-8
+# 一般的な外部ライブラリ
 import os
 import RPi.GPIO as GPIO
 import time
 import numpy as np
 import sys
+import multiprocessing
+from multiprocessing import Process
 
 print("ライブラリの初期化に数秒かかります...")
+# togikaidriveのモジュール
 import config
 import ultrasonic
 import motor
 import planner
 import joystick
 import camera_multiprocess
-import multiprocessing
-from multiprocessing import Process
 import gyro
 
 if config.fpv:
     #img_sh = multiprocessing.sharedctypes.RawArray('i', config.img_size[0]*config.img_size[1]*config.img_size[2])
     data_sh = multiprocessing.sharedctypes.RawArray('i', (2,3))
     import fpv
-    #server = Process(target = fpv.run,  kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
     server = Process(target = fpv.run,  args = data_sh, kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
-    #server = Process(target = fpv.run, args = img_sh, kwargs = {'host': 'localhost', 'port': config.port, 'threaded': True})
     server.start()
    #fpv.run(host='localhost', port=config.port, debug=False, threaded=True)
-
-#while True:
-#    print (fpv.frame)
-    #pass
 
 # データ記録用配列作成
 d = np.zeros(config.N_ultrasonics)
@@ -66,6 +62,7 @@ imu = gyro.BNO055()
 plan = planner.Planner(config.mode_plan)
 
 # コントローラーの初期化
+mode = "auto"
 if config.CONTROLLER:
     joystick = joystick.Joystick()
 
@@ -92,7 +89,7 @@ try:
         for i, name in enumerate(config.ultrasonics_list):
             d[i] = ultrasonics[name].measure()
             #message += name + ":" + str(round(ultrasonics[name].dis,2)).rjust(7, ' ') #Thony表示用にprint変更
-            message += name + ":" + str(round(ultrasonics[name].dis,2))+ ", "
+            message += name + ":" + "{:>4}".format(round(ultrasonics[name].dis))+ ", "
             # サンプリングレートを調整する場合は下記をコメントアウト外す
             #time.sleep(sampling_cycle)
 
@@ -121,7 +118,8 @@ try:
         ## ジョイスティックで操作する場合は上書き
         if config.CONTROLLER:
             joystick.poll()
-            if joystick.mode[0] == "user":
+            mode = joystick.mode[0]
+            if mode == "user":
                 steer_pwm_duty = int(joystick.steer*config.JOYSTICK_STEERING_SCALE*100)
                 throttle_pwm_duty = int(joystick.accel*config.JOYSTICK_THROTTLE_SCALE*100)
                 if joystick.accel2:
@@ -132,28 +130,26 @@ try:
                 recording = True
             else: 
                 recording = False
+            
+            ### コントローラでブレーキ
+            if joystick.breaking:
+                motor.breaking()
 
-        ## 補正（動的制御）
-        ## Gthr:スロットル（前後方向）のゲイン、Gstr:ステアリング（横方向）のゲイン
-        ## ヨー角の角速度でオーバーステア/スリップに対しカウンターステア 
+        ## モータードライバーに出力をセット
+        ### 補正（動的制御）
+        ### Gthr:スロットル（前後方向）のゲイン、Gstr:ステアリング（横方向）のゲイン
+        ### ヨー角の角速度でオーバーステア/スリップに対しカウンターステア 
         if config.mode_plan == "GCounter":
             imu.GCounter()
+            motor.set_throttle_pwm_duty(throttle_pwm_duty * (1 - 2 * imu.Gthr))
+            motor.set_steer_pwm_duty(steer_pwm_duty * (1 - 2 * imu.Gstr))        
         ## ヨー角の角速度でスロットル調整 
         ## 未実装
         #elif config.mode_plan == "GVectoring":
         #    imu.GVectoring()
         else: 
-            pass
-
-        ## モータードライバーに出力をセット
-        motor.set_throttle_pwm_duty(throttle_pwm_duty * (1 - 2 * imu.Gthr))
-        motor.set_steer_pwm_duty(steer_pwm_duty * (1 - 2 * imu.Gstr))        
-        #motor.set_throttle_pwm_duty(throttle_pwm_duty)  
-        #motor.set_steer_pwm_duty(steer_pwm_duty)        
-
-        ## ブレーキ
-        if joystick.breaking:
-            motor.breaking()
+            motor.set_throttle_pwm_duty(throttle_pwm_duty)  
+            motor.set_steer_pwm_duty(steer_pwm_duty)        
 
         ## 記録（タイムスタンプと距離データを配列に記録）
         ts =  time.time()
@@ -166,7 +162,8 @@ try:
                 cam.save(img, ts, steer_pwm_duty, throttle_pwm_duty, config.image_dir)
 
         ## 全体の状態を出力      
-        print("*Rec:",recording, "*Mode:",joystick.mode[0],"*RunTime:",ts_run ,"*Str:",steer_pwm_duty,"*Thr:",throttle_pwm_duty," ", message) #,end=' , '
+        #print("Rec:"+recording, "Mode:",mode,"RunTime:",ts_run ,"Str:",steer_pwm_duty,"Thr:",throttle_pwm_duty,"Uls:", message) #,end=' , '
+        print("Rec:{0}, Mode:{1}, RunTime:{2:>5}, Thr:{3:>4}, Str:{4:>4}, Uls:{5}".format(recording, mode, ts_run, throttle_pwm_duty, steer_pwm_duty, message)) #,end=' , '
 
         ## 後退/停止操作（簡便のため、判断も同時に実施） 
         if config.mode_recovery == "None":
@@ -202,7 +199,7 @@ try:
     header ="Tstamp Str Thr "
     for name in config.ultrasonics_list:
         header += name + " "        
-    np.savetxt(config.record_filename, d_stack[1:],  fmt='%10.2f', header=header, comments="")
+    np.savetxt(config.record_filename, d_stack[1:], delimiter=',',  fmt='%10.2f', header=header, comments="")
     #np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
     print('記録停止')
     print("記録保存--> ",config.record_filename)
@@ -217,7 +214,7 @@ except KeyboardInterrupt:
     header ="Time Thr Str"
     for name in config.ultrasonics_list:
         header += name + " "        
-    np.savetxt(config.record_filename, d_stack[1:],  fmt='%10.2f', header=header, comments="")
+    np.savetxt(config.record_filename, d_stack[1:], delimiter=',',  fmt='%10.2f', header=header, comments="")
     #np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
     print('記録停止')
     print("記録保存--> ",config.record_filename)

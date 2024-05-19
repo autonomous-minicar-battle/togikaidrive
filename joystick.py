@@ -19,7 +19,7 @@ class Joystick(object):
         self.accel1 = 0.
         self.accel2 = 0.
         self.breaking = 0
-        self.mode = ["user","auto"]
+        self.mode = ["auto","user"]
         self.recording = True
         # pygameの初期化
         pygame.init()

@@ -2,7 +2,6 @@ import smbus
 import time
 import struct
 from copy import deepcopy
-from chkprint import chkprint
 
 class IMU():
 	def __init__(self):

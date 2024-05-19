@@ -16,10 +16,8 @@ def index():
 def gen(camera):
     global data_sh
     while True:
-        #frame = camera.get_frame()
         frame = camera.get_frame_multi()
-        print("print data_sh:",data_sh)
-        #print(frame)
+        #print("print data_sh:",data_sh)
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 

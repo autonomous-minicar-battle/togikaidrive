@@ -40,15 +40,15 @@ class Planner:
     # 前側１センサーを用いた後退
     def Back(self, ultrasonic_Fr):
     ## 目前に前壁をtimes回検知
-        times = 1
+        times = 3
         # elifではなく、別のif文として評価
         if max(ultrasonic_Fr.records[:times]) < self.DETECTION_DISTANCE_BACK:
             self.message = "後退"
             self.flag_back = True
+            print(self.message)
         elif max(ultrasonic_Fr.records[:times]) > self.DETECTION_DISTANCE_BACK:
             self.message = "前進"
             self.flag_back = False  
-            print(self.message)
 
     # 前側１センサーを用いた停止
     def Stop(self, ultrasonic_Fr):
