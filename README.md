@@ -96,7 +96,9 @@
 2. Raspberry [Pi Imager](https://www.raspberrypi.com/software/)を使ってSDカードへ書き込み
 3. [togikaidrive](https://github.com/autonomous-minicar-battle/togikaidrive.git)をgit cloneする
 4. パスワードなしSSHログイン：[参考](https://qiita.com/Ash_root/items/143f7f21373f43127da6)
-5. ライブラリ類
+5. wifiの設定ファイル設置と暗号化：[参考](https://raspida.com/wifisetupfile/)
+   1. 過去wifi設定ミスっているやつでつながらない場合[参考](https://tm-progapp.hatenablog.com/entry/2022/03/30/112529)
+6. ライブラリ類
    1. [OpenCV](https://opencv.org/)
       1. sudo apt install python3-opencv
    2. [Flask](https://msiz07-flask-docs-ja.readthedocs.io/ja/latest/)
