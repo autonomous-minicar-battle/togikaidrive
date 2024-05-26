@@ -17,6 +17,7 @@ import planner
 import joystick
 import camera_multiprocess
 import gyro
+import train_pytorch
 
 if config.fpv:
     #img_sh = multiprocessing.sharedctypes.RawArray('i', config.img_size[0]*config.img_size[1]*config.img_size[2])
@@ -61,6 +62,11 @@ imu = gyro.BNO055()
 # 操作判断プランナーの初期化
 plan = planner.Planner(config.mode_plan)
 
+# NNモデルの読み込み
+model_path = "models"
+model_name = "model_20210901_20210901_20210901_epoch_100.pth"
+model = train_pytorch.load_model(os.path.join(model_path, model_name))
+
 # コントローラーの初期化
 mode = "auto"
 if config.CONTROLLER:
@@ -75,6 +81,7 @@ input()
 motor.set_throttle_pwm_duty(config.STOP)
 
 # fpv
+## pass
 
 # 開始時間
 start_time = time.time()
@@ -108,8 +115,8 @@ try:
         elif config.mode_plan == "RightHand_PID":
             steer_pwm_duty, throttle_pwm_duty  = plan.RightHand_PID(ultrasonics["FrRH"], ultrasonics["RrRH"])
         ## ニューラルネットを使ってスムーズに走る
-        #未実装
-        #steer_pwm_duty, throttle_pwm_duty  = plan.NN(dis_FrRH, dis_RrRH)
+        #評価中
+            steer_pwm_duty, throttle_pwm_duty  = plan.NN(model, ultrasonics["FrLH"].dis, ultrasonics["Fr"].dis, ultrasonics["FrRH"].dis)
         else: 
             print("デフォルトの判断モードの選択ではありません, コードを書き換えてオリジナルのモードを実装しよう!")
             break
@@ -141,15 +148,15 @@ try:
         ### ヨー角の角速度でオーバーステア/スリップに対しカウンターステア 
         if config.mode_plan == "GCounter":
             imu.GCounter()
-            motor.set_throttle_pwm_duty(throttle_pwm_duty * (1 - 2 * imu.Gthr))
             motor.set_steer_pwm_duty(steer_pwm_duty * (1 - 2 * imu.Gstr))        
+            motor.set_throttle_pwm_duty(throttle_pwm_duty * (1 - 2 * imu.Gthr))
         ## ヨー角の角速度でスロットル調整 
         ## 未実装
         #elif config.mode_plan == "GVectoring":
         #    imu.GVectoring()
         else: 
-            motor.set_throttle_pwm_duty(throttle_pwm_duty)  
             motor.set_steer_pwm_duty(steer_pwm_duty)        
+            motor.set_throttle_pwm_duty(throttle_pwm_duty)  
 
         ## 記録（タイムスタンプと距離データを配列に記録）
         ts =  time.time()
@@ -163,7 +170,7 @@ try:
 
         ## 全体の状態を出力      
         #print("Rec:"+recording, "Mode:",mode,"RunTime:",ts_run ,"Str:",steer_pwm_duty,"Thr:",throttle_pwm_duty,"Uls:", message) #,end=' , '
-        print("Rec:{0}, Mode:{1}, RunTime:{2:>5}, Thr:{3:>4}, Str:{4:>4}, Uls:{5}".format(recording, mode, ts_run, throttle_pwm_duty, steer_pwm_duty, message)) #,end=' , '
+        print("Rec:{0}, Mode:{1}, RunTime:{2:>5}, Str:{3:>4}, Thr:{4:>4}, Uls:{5}".format(recording, mode, ts_run, steer_pwm_duty, message,throttle_pwm_duty)) #,end=' , '
 
         ## 後退/停止操作（簡便のため、判断も同時に実施） 
         if config.mode_recovery == "None":
@@ -173,8 +180,8 @@ try:
             ### 後退
             plan.Back(ultrasonics["Fr"])
             if plan.flag_back == True:
-                motor.set_throttle_pwm_duty(config.REVERSE)
                 motor.set_steer_pwm_duty(config.NUTRAL)
+                motor.set_throttle_pwm_duty(config.REVERSE)
                 time.sleep(0.9)
             else: 
                 pass
@@ -194,28 +201,18 @@ try:
                 input()
                 #break
 
+finally:
     # 終了処理
+    print('\n停止')
+    motor.set_throttle_pwm_duty(config.STOP)
+    motor.set_steer_pwm_duty(config.NUTRAL)
     config.GPIO.cleanup()
-    header ="Tstamp Str Thr "
+    header ="Tstamp, Str, Thr, "
     for name in config.ultrasonics_list:
-        header += name + " "        
+        header += name + ", "        
     np.savetxt(config.record_filename, d_stack[1:], delimiter=',',  fmt='%10.2f', header=header, comments="")
     #np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
     print('記録停止')
     print("記録保存--> ",config.record_filename)
     print("画像保存--> ",config.image_dir)
 
-# Ctr-C時の終了処理
-except KeyboardInterrupt:
-    motor.set_throttle_pwm_duty(config.STOP)
-    motor.set_steer_pwm_duty(config.NUTRAL)
-    print('\nユーザーにより停止')
-    config.GPIO.cleanup()
-    header ="Time Thr Str"
-    for name in config.ultrasonics_list:
-        header += name + " "        
-    np.savetxt(config.record_filename, d_stack[1:], delimiter=',',  fmt='%10.2f', header=header, comments="")
-    #np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
-    print('記録停止')
-    print("記録保存--> ",config.record_filename)
-    print("画像保存--> ",config.image_dir)

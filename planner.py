@@ -3,6 +3,7 @@ import numpy as np
 import ultrasonic
 import config
 import time
+import torch
 
 class Planner:
     def __init__(self, name):
@@ -151,33 +152,10 @@ class Planner:
         self.steer_pwm_duty, self.throttle_pwm_duty  = self.RightHand(ultrasonic_FrRH.dis, ultrasonic_RrRH.dis)
         return steer_pwm_duty_pid*self.steer_pwm_duty, self.throttle_pwm_duty
 
-
-        # 検知時の判断
-        ## 右壁が遠い
-        if dis_FrRH > self.DETECTION_DISTANCE_TARGET + self.DETECTION_DISTANCE_RANGE and dis_RrRH > self.DETECTION_DISTANCE_TARGET + self.DETECTION_DISTANCE_RANGE:
-                self.steer_pwm_duty =config.RIGHT
-                self.throttle_pwm_duty = config.FORWARD_C
-                self.message = "右旋回"
-        ## 右壁が近い
-        elif dis_FrRH < self.DETECTION_DISTANCE_TARGET - self.DETECTION_DISTANCE_RANGE or dis_RrRH < self.DETECTION_DISTANCE_TARGET - self.DETECTION_DISTANCE_RANGE:
-            self.steer_pwm_duty =config.LEFT
-            self.throttle_pwm_duty = config.FORWARD_C
-            self.message = "左旋回"            
-        ## ちょうどよい
-        else: 
-            self.steer_pwm_duty =config.NUTRAL
-            self.throttle_pwm_duty = config.FORWARD_S
-            self.message = "直進中"
-
-        ## モーターへ出力を返す
-        if config.print_plan_result:
-            print(self.message)
-            print(self.message)
-        return self.steer_pwm_duty, self.throttle_pwm_duty
-
-
     # Neural Netを用いた走行
-    def NN(self, ultrasonic_RrRH, ultrasonic_FrRH, ultrasonic_Fr, ultrasonic_FrLH, ultrasonic_RrLH):
+    def NN(self, model, ultrasonic_FrLH, ultrasonic_Fr, ultrasonic_FrRH):
         ## モーターへ出力を返す
+        input = torch.tensor([ultrasonic_FrLH, ultrasonic_Fr, ultrasonic_FrRH])
+        self.steer_pwm_duty, self.throttle_pwm_duty = model.predict(model, input)
         print(self.message)
         return self.steer_pwm_duty, self.throttle_pwm_duty

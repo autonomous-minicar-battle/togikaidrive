@@ -1,72 +1,175 @@
-import pandas as pd
 import os
+import sys
+import datetime
+import pandas as pd
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
-# "record"フォルダ内の全てのcsvファイルを取得
-folder = "records"
-print("Training: type file name containing data below:" )
-csv_files = [f for f in os.listdir(folder) if f.endswith('.csv')]
+# データの読み込みと前処理
+def load_data():
+    folder = "records"
+    csv_files = []
+    for file in os.listdir(folder):
+        if file.endswith(".csv"):
+            csv_files.append(file)
+    print(csv_files)
 
-# 各csvファイルを読み込み、データフレームに格納
-dataframes = [pd.read_csv(os.path.join(folder, f)) for f in csv_files]
+    if len(csv_files) > 1:
+        answer = input("複数のcsvファイルがあります。ファイルを結合しますか？ (y)")
+        if answer == "y":
+            dataframes = []
+            dataframe_colums = []
+            for csv_file in csv_files:
+                csv_path = os.path.join(folder, csv_file)
+                df = pd.read_csv(csv_path)
+                dataframes.append(df)
+                dataframe_colums.append(df.columns)
+                if len(dataframe_colums) > 1:
+                    if not all(dataframe_colums[0] == dataframe_colums[1]):
+                        print(csv_path, "の列が他のファイルと異なり結合できません。確認してください。")
+                        sys.exit()
+                merged_df = pd.concat(dataframes)
+            df = merged_df
+        else:
+            csv_file = input("csvファイル名を入力してください: ")
+            #csv_file = "record_20240519_224821.csv"
+            csv_path = os.path.join(folder, csv_file)
+            df = pd.read_csv(csv_path)
+    else:
+        csv_file = csv_files[0]
+        csv_path = os.path.join(folder, csv_file)
+        df = pd.read_csv(csv_path)
 
-# 1,2の列が目標変数
-X = pd.concat([df.iloc[:, 2:] for df in dataframes])
-y = pd.concat([df.iloc[:, 1:2] for df in dataframes])
+    x = df.iloc[:, 3:]
+    y = df.iloc[:, 1:3]
+    x_tensor = torch.tensor(x.values, dtype=torch.float32)
+    y_tensor = torch.tensor(y.values, dtype=torch.float32)
+    print("データ形式の確認:", "x:", x_tensor.shape, "y:", y_tensor.shape)
+    return x_tensor, y_tensor, csv_file
 
-# 各特徴量の平均が0、標準偏差が1になるようにデータを正規化
-scaler = StandardScaler()
-X = scaler.fit_transform(X)
+# カスタムデータセットクラス
+class CustomDataset(torch.utils.data.Dataset):
+    def __init__(self, x_tensor, y_tensor):
+        self.x = x_tensor
+        self.y = y_tensor
 
-# データをテンソルに変換
-X_tensor = torch.tensor(X.values, dtype=torch.float32)
-y_tensor = torch.tensor(y.values, dtype=torch.float32)
+    def __len__(self):
+        return len(self.x)
 
-# データセットとデータローダーを作成
-dataset = TensorDataset(X_tensor, y_tensor)
-dataloader = DataLoader(dataset, batch_size=32)
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
 
-# 3層のニューラルネットワークを定義
-model = nn.Sequential(
-    nn.Linear(X.shape[1], 64),
-    nn.ReLU(),
-    nn.Linear(64, 64),
-    nn.ReLU(),
-    nn.Linear(64, 2)  
-)
+# モデルの定義
+class NeuralNetwork(nn.Module):
+    def __init__(self, input_dim, output_dim):
+        super(NeuralNetwork, self).__init__()
+        self.layers = nn.Sequential(
+            nn.Linear(input_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, output_dim)
+        )
 
-# 損失関数と最適化手法を定義
-criterion = nn.MSELoss()  # 仮定: 回帰タスク
-optimizer = torch.optim.Adam(model.parameters())
+    def forward(self, x):
+        return self.layers(x)
 
-# 学習ループ
-for epoch in range(100):  # 100エポックで学習
-    for inputs, targets in dataloader:
-        # 前方計算
-        outputs = model(inputs)
-        loss = criterion(outputs, targets)
+# トレーニング関数
+def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=100):
+    model.train()  # モデルをトレーニングモードに設定
+    for epoch in range(start_epoch, start_epoch + epochs):
+        for inputs, targets in dataloader:
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+        print(f'Epoch {epoch+1}/{epochs}, Loss: {loss.item()}')
+    print("トレーニングが完了しました。")
+    return epoch+1
+    
+# 推論関数
+def predict(model, x_tensor):
+    model.eval()  # モデルを評価モードに設定
+    with torch.no_grad():
+        predictions = model(x_tensor)
+    return predictions
 
-        # 勾配をゼロにリセット
-        optimizer.zero_grad()
+# モデル保存関数
+def save_model(model, optimizer, folder, csv_file, epoch):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    date_str = datetime.datetime.now().strftime('%Y%m%d')
+    model_name = f'model_{date_str}_{csv_file}_epoch_{epoch}.pth'
+    torch.save({
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict()
+    }, os.path.join(folder, model_name))
+    print(f"モデルを保存しました: {model_name}")
 
-        # 逆伝播計算
-        loss.backward()
+'''
+# モデル読み込み関数
+def load_model(model, optimizer, folder, csv_file, epoch):
+    model_path = f'models/model_{csv_file}_epoch_{epoch}.pth'
+    checkpoint = torch.load(model_path)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    return checkpoint['epoch']
+'''
+# モデル読み込み関数
+def load_model(model, optimizer, folder, csv_file):
+    model_files = [file for file in os.listdir(folder) if file.startswith(f'model_')]
+    if model_files:
+        print("利用可能なモデル:")
+        print(model_files)
+        model_name = input("読み込むモデル名を入力してください: ")
+        model_path = os.path.join(folder, model_name)
+        checkpoint = torch.load(model_path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        print(f"モデルを読み込みました: {model_name}")
+        return checkpoint['epoch']
+    else:
+        print("利用可能なモデルが見つかりませんでした。")
+        return 0
 
-        # パラメータ更新
-        optimizer.step()
+def main():
+    # データのロード
+    x_tensor, y_tensor, csv_file = load_data()
+    
+    # データセットとデータローダーの作成
+    dataset = CustomDataset(x_tensor, y_tensor)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+    
+    # モデルの作成
+    input_dim = x_tensor.shape[1]
+    output_dim = y_tensor.shape[1]
+    model = NeuralNetwork(input_dim, output_dim)
+    
+    # 損失関数と最適化手法の設定
+    criterion = nn.MSELoss()  # 仮定: 回帰タスク
+    optimizer = torch.optim.Adam(model.parameters())
+        
+    # モデルの読み込み
+    continue_training = input("続きから学習を再開しますか？ (y/n): ").strip().lower() == 'y'
+    start_epoch = 0
+    
+    if continue_training:
+        start_epoch = load_model(model, optimizer, 'models', csv_file)
+        epochs = int(input("学習するエポック数を入力してください: ").strip())
 
-# モデルを保存するディレクトリを作成
-if not os.path.exists('models'):
-    os.makedirs('models')
+    # モデルのトレーニング
+    epoch = train_model(model, dataloader, criterion, optimizer, start_epoch=start_epoch, epochs=epochs)
+    
+    # モデルの保存
+    save_model(model, optimizer, 'models', csv_file, epoch)
+    
+    # 推論の実行例
+    print("推論の実行例です。")
+    predictions = predict(model, x_tensor)
+    print(predictions)
 
-# 学習完了時の日付を取得
-date_str = datetime.now().strftime('%Y%m%d')
-
-# 学習に使用したCSVファイルの名前を取得
-csv_names = '_'.join([os.path.splitext(f)[0] for f in csv_files])
-
-# モデルを保存
-model_name = f'model_{date_str}_{csv_names}.pth'
-torch.save(model.state_dict(), os.path.join('models', model_name))
+if __name__ == "__main__":
+    main()
