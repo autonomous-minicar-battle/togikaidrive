@@ -3,7 +3,7 @@ import numpy as np
 import ultrasonic
 import config
 import time
-import torch
+#import torch
 
 class Planner:
     def __init__(self, name):

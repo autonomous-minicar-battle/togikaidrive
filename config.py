@@ -96,7 +96,8 @@ Ncategory = 5
 #ultrasonics_list = ["FrLH","Fr","FrRH"]
 ### ５つ使う場合はこちらをコメントアウト外す
 ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
-#ultrasonics_list = ["RrRH"] #, "Fr","FrRH","RrRH"]
+### ８つ使う場合ははこちらのコメントアウト外す
+ultrasonics_list.extend(["BackRH", "Back", "BackLH"])
 
 ## 超音波センサの測定回数、ultrasonic.pyチェック用
 sampling_times = 100
@@ -121,10 +122,10 @@ t_list=[12,16,18,22,32,36,38,40] #new board
 GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
 
 ## !!!超音波センサ初期設定、配線を変えない限り触らない
-#ultrasonics_dict_trig = {"Fr":t_list[2], "FrLH":t_list[1], "RrLH":t_list[0], "FrRH":t_list[3], "RrRH":t_list[4]} # new board
-#ultrasonics_dict_echo = {"Fr":e_list[2], "FrLH":e_list[1], "RrLH":e_list[0], "FrRH":e_list[3], "RrRH":e_list[4]} # new board
-ultrasonics_dict_trig = {"Fr":t_list[0], "FrRH":t_list[1], "FrLH":t_list[2], "RrRH":t_list[3], "RrLH":t_list[4]} 
-ultrasonics_dict_echo = {"Fr":e_list[0], "FrRH":e_list[1], "FrLH":e_list[2], "RrRH":e_list[3], "RrLH":e_list[4]} 
+ultrasonics_dict_trig = {"Fr":t_list[0], "FrRH":t_list[1], "FrLH":t_list[2], "RrRH":t_list[3], "RrLH":t_list[4], "BackRH":t_list[5], "Back":t_list[6], "BackLH":t_list[7]} 
+ultrasonics_dict_echo = {"Fr":e_list[0], "FrRH":e_list[1], "FrLH":e_list[2], "RrRH":e_list[3], "RrLH":e_list[4], "BackRH":e_list[5], "Back":e_list[6], "BackLH":e_list[7]}
+#ultrasonics_dict_trig = {"Fr":t_list[0], "FrRH":t_list[1], "FrLH":t_list[2], "RrRH":t_list[3], "RrLH":t_list[4]} 
+#ultrasonics_dict_echo = {"Fr":e_list[0], "FrRH":e_list[1], "FrLH":e_list[2], "RrRH":e_list[3], "RrLH":e_list[4]} 
 N_ultrasonics = len(ultrasonics_list)
 ## !!!
 
