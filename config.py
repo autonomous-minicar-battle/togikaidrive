@@ -26,15 +26,15 @@ DETECTION_DISTANCE_RL = 150
 ### 他
 DETECTION_DISTANCE_FrLH = 150
 DETECTION_DISTANCE_FrRH = 150
-DETECTION_DISTANCE_FrLH = 150
-DETECTION_DISTANCE_FrRH = 150
+DETECTION_DISTANCE_RrLH = 150
+DETECTION_DISTANCE_RrRH = 150
 DETECTION_DISTANCE_TARGET = 180 #目標距離
 DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
 
 # 判断モード選択
 ##　選択肢："Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"
 mode_plan = "Right_Left_3"
-model_plan_list = ["Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"]
+model_plan_list = ["GoStraight","Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"]
 ## 判断結果出力、Thonyのplotterを使うならFalse
 print_plan_result = False
 ## PIDパラメータ(PDまでを推奨)
@@ -44,13 +44,18 @@ K_D = 0.3 #0.3
 
 # 復帰モード選択
 mode_recovery = "Back" #None, Back, Stop
+recovery_time = 0.5
 
-# 動的制御モード選択
+# ジャイロを使った動的制御モード選択
+HAVE_IMU = False #True
 mode_dynamic_control = "GCounter" #GVectoring
+
+# Thonnyのplotterを使う場合
+plotter = False
 
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
 # コントローラー（ジョイスティックの設定）
-CONTROLLER = True #True
+HAVE_CONTROLLER = False #True
 JOYSTICK_STEERING_SCALE = -1.0       #some people want a steering that is less sensitve. This scalar is multiplied with the steering -1 to 1. It can be negative to reverse dir.
 JOYSTICK_THROTTLE_SCALE = -1.0       #some people want a throttle that is less sensitve. 
 #AUTO_RECORD_ON_THROTTLE = False      #if true, we will record whenever throttle is not zero. if false, you must manually toggle recording with some other trigger. Usually circle button on joystick.
@@ -85,12 +90,12 @@ IMSHOW = False #　画像を表示するか
 
 
 # NNパラメータ
-Nnode = 3
-Nlayer = 3
-model = "linear" #"categorical"
-Ncategory = 5
+#Nnode = 3
+#Nlayer = 3
+#model = "linear" #"categorical"
+#Ncategory = 5
 
-# 超音波センサ
+# 超音波センサ数
 ## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
 ### 前３つ使う場合はこちらをコメントアウト外す
 #ultrasonics_list = ["FrLH","Fr","FrRH"]
@@ -133,8 +138,7 @@ N_ultrasonics = len(ultrasonics_list)
 ## 過去の操作値記録回数
 motor_Nrecords = 5
 
-## PWMピンのチャンネル
-## !!!配線を変えない限り触らない
+## PWMピンのチャンネル 配線を変えない限り触らない
 #CHANNEL_STEERING = 14
 #CHANNEL_THROTTLE = 13
 CHANNEL_STEERING = 1 #new board
