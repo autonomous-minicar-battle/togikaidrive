@@ -69,6 +69,7 @@ config.THROTTLE_FORWARD_PWM = 540
 config.THROTTLE_REVERSE_PWM = 320
 
 ## 使わないライブラリOFF
+config.HAVE_CAMERA =False
 config.HAVE_IMU =False
 config.HAVE_CONTROLLER = False
 config.fpv = False
@@ -109,7 +110,7 @@ recording = True
 
 # 画像保存
 #running = Value("b", True)
-if config.HAVE_CONTROLLER and not config.fpv:
+if config.HAVE_CAMERA and not config.fpv:
     print("Start taking pictures in ",config.image_dir)
     cam = camera_multiprocess.VideoCaptureWrapper(0)
     print("【 ◎*】Capture started! \n")
@@ -243,7 +244,7 @@ try:
         if recording:
             d_stack = np.vstack((d_stack, np.insert(d, 0, [ts, steer_pwm_duty, throttle_pwm_duty]),))
             ### 画像保存 ret:カメラ認識、img：画像
-            if config.HAVE_CONTROLLER and not config.fpv:
+            if config.HAVE_CAMERA and not config.fpv:
                 ret, img = cam.read()
                 cam.save(img, ts, steer_pwm_duty, throttle_pwm_duty, config.image_dir)
 
