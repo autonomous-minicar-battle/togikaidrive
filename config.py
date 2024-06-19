@@ -95,14 +95,14 @@ IMSHOW = False #　画像を表示するか
 #model = "linear" #"categorical"
 #Ncategory = 5
 
-# 超音波センサ数
+# 超音波センサの設定
 ## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
 ### 前３つ使う場合はこちらをコメントアウト外す
 #ultrasonics_list = ["FrLH","Fr","FrRH"]
 ### ５つ使う場合はこちらをコメントアウト外す
 ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 ### ８つ使う場合ははこちらのコメントアウト外す
-ultrasonics_list.extend(["BackRH", "Back", "BackLH"])
+#ultrasonics_list.extend(["BackRH", "Back", "BackLH"])
 
 ## 超音波センサの測定回数、ultrasonic.pyチェック用
 sampling_times = 100
@@ -117,13 +117,21 @@ ultrasonics_Nrecords = 5
 ### GPIOピン番号の指示方法
 GPIO.setmode(GPIO.BOARD)
 
-### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
-#e_list=[26,24,37,31,38]
-e_list=[11,13,15,29,31,33,35,37] #new board
+### GPIOピン番号の指示方法
+board = "new" #old：~2023年たこ足配線、new：新ボード
+if board == "old":
+    ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
+    e_list=[26,24,37,31,38]
+    ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
+    t_list=[15,13,35,32,36]
+elif board == "new": #new board
+    ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
+    e_list=[11,13,15,29,31,33,35,37]
+    ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
+    t_list=[12,16,18,22,32,36,38,40]
+else:
+    print("Please set board as 'old' or 'new'.")
 GPIO.setup(e_list,GPIO.IN)
-### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
-#t_list=[15,13,35,32,36]
-t_list=[12,16,18,22,32,36,38,40] #new board 
 GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
 
 ## !!!超音波センサ初期設定、配線を変えない限り触らない

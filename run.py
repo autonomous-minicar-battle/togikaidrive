@@ -4,9 +4,9 @@ import RPi.GPIO as GPIO
 # ~~~出前授業用に一部のバラメータを変更
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
-config.FORWARD_S = 80 #ストレートでの値, joy_accel1
-config.FORWARD_C = 60 #カーブでのの値, joy_accel2
-config.REVERSE = -60 
+config.FORWARD_S = 50 #ストレートでの値, joy_accel1
+config.FORWARD_C = 40 #カーブでのの値, joy_accel2
+config.REVERSE = -30 
 # ステアリング用
 config.LEFT = 100 #<=100
 config.RIGHT = -100 #<=100
@@ -29,27 +29,36 @@ config.DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
 
 # 判断モード選択
 ##　選択肢："Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"
-config.mode_plan = "GoStraight" #"Right_Left_3"
+config.mode_plan = "Right_Left_3" #"GoStraight"
 
 # 復帰モード選択
 config.mode_recovery = "Back" #None, Back, Stop
 config.recovery_time = 0.5
 
 # 超音波センサー設定
-## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
 ### 前３つ使う場合はこちらをコメントアウト外す
 #config.ultrasonics_list = ["FrLH","Fr","FrRH"]
 ### ５つ使う場合はこちらをコメントアウト外す
-config.ultrasonics_list = ["Fr", "FrRH", "FrLH", "RrRH", "RrLH"]
-#config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
-### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
-config.e_list=[26,24,37,31,38]
-#e_list=[11,13,15,29,31,33,35,37] #new board
-GPIO.setup(config.e_list,GPIO.IN)
-### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
-config.t_list=[15,13,35,32,36]
-#t_list=[12,16,18,22,32,36,38,40] #new board 
-GPIO.setup(config.t_list,GPIO.OUT,initial=GPIO.LOW)
+config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
+
+### GPIOピン番号の指示方法
+config.GPIO.cleanup()
+board = "old" #old：~2023年たこ足配線、new：新ボード
+if board == "old":
+    ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
+    e_list=[26,24,37,31,38]
+    ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
+    t_list=[15,13,35,32,36]
+elif board == "new": #new board
+    ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
+    e_list=[11,13,15,29,31,33,35,37]
+    ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
+    t_list=[12,16,18,22,32,36,38,40]
+else:
+    print("Please set board as 'old' or 'new'.")
+GPIO.setup(e_list,GPIO.IN)
+GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
+
 
 ## PWMピンのチャンネル 配線を変えない限り触らない
 config.CHANNEL_STEERING = 14
@@ -67,7 +76,7 @@ config.STEERING_LEFT_PWM_LIMIT = 250
 ## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
 config.THROTTLE_STOPPED_PWM = 370
 config.THROTTLE_FORWARD_PWM = 500
-config.THROTTLE_REVERSE_PWM = 350
+config.THROTTLE_REVERSE_PWM = 240
 
 ## thonny plotter
 config.plotter = True
@@ -145,7 +154,6 @@ if config.HAVE_IMU:
     imu = gyro.BNO055()
     ## 計測例
     ## angle, acc, gyr = imu.measure_set()
-
 
 # コントローラーの初期化
 mode = "auto"
