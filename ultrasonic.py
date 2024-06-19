@@ -57,8 +57,12 @@ if __name__ == "__main__":
     ultrasonics = [] 
     for name in config.ultrasonics_list:
         ultrasonics.append(Ultrasonic(name))
+
+    # 一つだけ使う場合, 5つ使う場合はコメントアコメント
+    ultrasonics = [Ultrasonic("Fr")] 
+
     print(" 下記の超音波センサを利用")
-    print(" ", config.ultrasonics_list)
+    print(" ", ultrasonics)
 
     # データ記録用配列作成
     d = np.zeros(len(ultrasonics))
