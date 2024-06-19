@@ -9,7 +9,7 @@ import os
 FORWARD_S = 80 #ストレートでの値, joy_accel1
 FORWARD_C = 60 #カーブでのの値, joy_accel2
 STOP = 0
-REVERSE = -60 
+REVERSE = -50 
 # ステアリング用
 LEFT = 100 #<=100
 NUTRAL = 0 
@@ -18,8 +18,8 @@ RIGHT = -100 #<=100
 # 超音波センサの検知パラメータ 
 ## 距離関連、単位はmm
 ### 前壁の停止/検知距離
-DETECTION_DISTANCE_STOP = 80
-DETECTION_DISTANCE_BACK = 80
+DETECTION_DISTANCE_STOP = 150
+DETECTION_DISTANCE_BACK = 150
 DETECTION_DISTANCE_Fr = 150
 ### 右左折判定基準距離
 DETECTION_DISTANCE_RL = 150
@@ -127,10 +127,10 @@ t_list=[12,16,18,22,32,36,38,40] #new board
 GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
 
 ## !!!超音波センサ初期設定、配線を変えない限り触らない
-ultrasonics_dict_trig = {"Fr":t_list[0], "FrRH":t_list[1], "FrLH":t_list[2], "RrRH":t_list[3], "RrLH":t_list[4], "BackRH":t_list[5], "Back":t_list[6], "BackLH":t_list[7]} 
-ultrasonics_dict_echo = {"Fr":e_list[0], "FrRH":e_list[1], "FrLH":e_list[2], "RrRH":e_list[3], "RrLH":e_list[4], "BackRH":e_list[5], "Back":e_list[6], "BackLH":e_list[7]}
-#ultrasonics_dict_trig = {"Fr":t_list[0], "FrRH":t_list[1], "FrLH":t_list[2], "RrRH":t_list[3], "RrLH":t_list[4]} 
-#ultrasonics_dict_echo = {"Fr":e_list[0], "FrRH":e_list[1], "FrLH":e_list[2], "RrRH":e_list[3], "RrLH":e_list[4]} 
+#ultrasonics_dict_trig = {"Fr":t_list[0], "FrRH":t_list[1], "FrLH":t_list[2], "RrRH":t_list[3], "RrLH":t_list[4], "BackRH":t_list[5], "Back":t_list[6], "BackLH":t_list[7]} 
+#ultrasonics_dict_echo = {"Fr":e_list[0], "FrRH":e_list[1], "FrLH":e_list[2], "RrRH":e_list[3], "RrLH":e_list[4], "BackRH":e_list[5], "Back":e_list[6], "BackLH":e_list[7]}
+ultrasonics_dict_trig = {"Fr":t_list[0], "FrLH":t_list[1], "RrLH":t_list[2], "FrRH":t_list[3], "RrRH":t_list[4]} 
+ultrasonics_dict_echo = {"Fr":e_list[0], "FrLH":e_list[1], "RrLH":e_list[2], "FrRH":e_list[3], "RrRH":e_list[4]} 
 N_ultrasonics = len(ultrasonics_list)
 ## !!!
 

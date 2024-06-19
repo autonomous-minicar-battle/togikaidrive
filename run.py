@@ -14,11 +14,11 @@ config.RIGHT = -100 #<=100
 # 超音波センサの検知パラメータ 
 ## 距離関連、単位はmm
 ### 前壁の停止/検知距離
-config.DETECTION_DISTANCE_STOP = 80
-config.DETECTION_DISTANCE_BACK = 80
+config.DETECTION_DISTANCE_STOP = 150
+config.DETECTION_DISTANCE_BACK = 150
 config.DETECTION_DISTANCE_Fr = 500
 ### 右左折判定基準距離
-config.DETECTION_DISTANCE_RL = 300
+config.DETECTION_DISTANCE_RL = 500
 ### 他
 config.DETECTION_DISTANCE_FrLH = 150
 config.DETECTION_DISTANCE_FrRH = 150
@@ -29,7 +29,7 @@ config.DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
 
 # 判断モード選択
 ##　選択肢："Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"
-config.mode_plan = "GoStraight" 
+config.mode_plan = "GoStraight" #"Right_Left_3"
 
 # 復帰モード選択
 config.mode_recovery = "Back" #None, Back, Stop
@@ -65,9 +65,9 @@ config.STEERING_LEFT_PWM_LIMIT = 250
 
 ## アクセルのPWM値(motor.pyで調整した後値を入れる)
 ## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
-config.THROTTLE_STOPPED_PWM = 390
-config.THROTTLE_FORWARD_PWM = 540
-config.THROTTLE_REVERSE_PWM = 320
+config.THROTTLE_STOPPED_PWM = 370
+config.THROTTLE_FORWARD_PWM = 500
+config.THROTTLE_REVERSE_PWM = 350
 
 ## thonny plotter
 config.plotter = True
