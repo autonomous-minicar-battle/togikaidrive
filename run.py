@@ -68,6 +68,8 @@ else:
     print("Please set board as 'old' or 'new'.")
 config.GPIO.setup(config.e_list,config.GPIO.IN)
 config.GPIO.setup(config.t_list,config.GPIO.OUT,initial=config.GPIO.LOW)
+config.ultrasonics_dict_trig = {"Fr":config.t_list[0], "FrLH":config.t_list[1], "RrLH":config.t_list[2], "FrRH":config.t_list[3], "RrRH":config.t_list[4]} 
+config.ultrasonics_dict_echo = {"Fr":config.e_list[0], "FrLH":config.e_list[1], "RrLH":config.e_list[2], "FrRH":config.e_list[3], "RrRH":config.e_list[4]} 
 
 ## 操舵のPWM値
 config.STEERING_CENTER_PWM = 360
