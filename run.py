@@ -183,7 +183,7 @@ try:
         if config.mode_plan == "GoStraight":
             steer_pwm_duty,throttle_pwm_duty = 0, config.FORWARD_S
         ## 右左空いているほうに走る 
-        if config.mode_plan == "Right_Left_3":
+        elif config.mode_plan == "Right_Left_3":
             steer_pwm_duty,throttle_pwm_duty = plan.Right_Left_3(ultrasonics["FrLH"].dis, ultrasonics["Fr"].dis, ultrasonics["FrRH"].dis)
         ## 過去の値を使ってスムーズに走る
         elif config.mode_plan == "Right_Left_3_Records":
