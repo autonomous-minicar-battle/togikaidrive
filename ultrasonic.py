@@ -33,7 +33,7 @@ class Ultrasonic:
             #     print("break2")
                 break
         # time * sound speed / 2(round trip)
-        d = (sigon - sigoff)*340000/2
+        d = int((sigon - sigoff)*340000/2)
         # 2m以上は無視
         if d > 2000:
             self.dis = 2000
@@ -95,8 +95,7 @@ if __name__ == "__main__":
                 #距離データを配列に記録
                 d[j] = dis
                 #表示用にprint変更
-                #message += str(config.ultrasonics_list[j]) + ":" + str(round(dis,2)).rjust(7, ' ') 
-                message += str(config.ultrasonics_list[j]) + ":" + str(round(dis,2))+ ", "
+                message += str(config.ultrasonics_list[j]) + ":" + str(dis)+ ", "
                 time.sleep(sampling_cycle)
             d_stack = np.vstack((d_stack, np.insert(d, 0, time.perf_counter()-start_time)))
             print(message)
@@ -104,7 +103,7 @@ if __name__ == "__main__":
         np.savetxt(config.record_filename, d_stack, fmt='%.3e')
         ## 列方向に時間平均: np.round axis=0、スライスで時間の列は取得しない[:,1:]
         print('測定回数： ',sampling_times)
-        print('平均距離：', np.round(np.mean(d_stack[:,1:], axis=0),4))
+        print('平均距離：', np.round(np.mean(d_stack[:,1:], axis=0),0))
         print("平均測定時間/センサ(秒):",round((time.perf_counter()-start_time)/sampling_times/len(ultrasonics),2))
         print("記録保存--> ",config.record_filename)
 
