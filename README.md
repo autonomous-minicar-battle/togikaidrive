@@ -1,5 +1,5 @@
 # togikaidrive
-超音波センサ等で自動運転するミニカーの制御プログラム
+超音波センサ等で自動運転するミニカーの制御プログラム  
 自動運転ミニカーバトルと出前授業等で活用
 
 ## 主なプログラム概要
@@ -107,6 +107,26 @@ donkeycar 4.4.0を利用し約するため、busterを採用。
 
 6. メモリが少ないのでswapを増やす：
    [参考](https://nekopom.jp/raspberrypi_setting09/#index_id0)
+
+7. デフォルトでPython3系の利用  
+busterのpythonはデフォルトではpython2系になっているので、python3を利用する。ついでにpip3をpipにしておく。
+   ~~~
+   $ cd /usr/bin
+   $ sudo unlink python
+   $ sudo ln -s python3 python
+   $ sudo ln -s pip3 pip
+   ~~~
+
+8. [VNC](https://www.realvnc.com/)　リモートPCからマシン（ラズパイ）を操作するために活用：[参考](https://www.indoorcorgielec.com/resources/raspberry-pi/raspberry-pi-vnc/)
+   1. VNCビューアーをPCにインストール
+   2. ラズパイでVNCサーバーを設定
+      1. スタートメニューから、「設定 -> Raspberry Piの設定」をクリックします。
+      2. 設定ツールが起動するので、上部タブから「インターフェイス」を選択し、VNCの項目を有効にして、「OK」をクリックします。
+      3. ラズパイのIP address、またはホスト名を入れて接続
+
+   3. その他
+   - [最新のRaspiOSでRealVNCが使えない問題の解決方法](https://qiita.com/konchi_konnection/items/c8e2258f0a7efb49302f)
+   
 
 7. ライブラリ類
    1. [OpenCV](https://opencv.org/)

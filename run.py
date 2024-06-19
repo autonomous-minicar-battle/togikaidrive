@@ -1,5 +1,6 @@
 # coding:utf-8
 import config
+import RPi.GPIO as GPIO
 # ~~~出前授業用に一部のバラメータを変更
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
@@ -67,6 +68,10 @@ config.THROTTLE_STOPPED_PWM = 390
 config.THROTTLE_FORWARD_PWM = 540
 config.THROTTLE_REVERSE_PWM = 320
 
+## 使わないライブラリOFF
+config.HAVE_IMU =False
+config.HAVE_CONTROLLER = False
+config.fpv = False
 # ~~~出前授業用に一部のバラメータを変更　ここまで ~~~
 
 
