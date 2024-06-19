@@ -57,7 +57,7 @@ if __name__ == "__main__":
     ultrasonics = [] 
     for name in config.ultrasonics_list:
         ultrasonics.append(Ultrasonic(name))
-    print(" 下記の", config.N_ultrasonics,"個の超音波センサを利用")
+    print(" 下記の超音波センサを利用")
     print(" ", config.ultrasonics_list)
 
     # データ記録用配列作成

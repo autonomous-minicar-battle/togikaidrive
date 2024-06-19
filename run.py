@@ -40,7 +40,8 @@ config.recovery_time = 0.5
 ### 前３つ使う場合はこちらをコメントアウト外す
 #config.ultrasonics_list = ["FrLH","Fr","FrRH"]
 ### ５つ使う場合はこちらをコメントアウト外す
-config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
+config.ultrasonics_list = ["Fr", "FrRH", "FrLH", "RrRH", "RrLH"]
+#config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
 config.e_list=[26,24,37,31,38]
 #e_list=[11,13,15,29,31,33,35,37] #new board
@@ -128,7 +129,7 @@ motor.set_steer_pwm_duty(config.NUTRAL)
 ## 別々にインスタンス化する例　ultrasonic_RrLH = ultrasonic.Ultrasonic("RrLH")
 ## 一気にnameに"RrLH"等をultrasonics_listから入れてインスタンス化
 ultrasonics = {name: ultrasonic.Ultrasonic(name=name) for name in config.ultrasonics_list}
-print(" 下記の", config.N_ultrasonics,"個の超音波センサを利用")
+print(" 下記の超音波センサを利用")
 print(" ", config.ultrasonics_list)
 
 # 操作判断プランナーの初期化
