@@ -43,6 +43,8 @@ config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 
 ### GPIOピン番号の指示方法
 config.GPIO.cleanup()
+GPIO.setmode(GPIO.BOARD)
+### 新旧ボードの選択
 board = "old" #old：~2023年たこ足配線、new：新ボード
 if board == "old":
     ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
@@ -58,7 +60,6 @@ else:
     print("Please set board as 'old' or 'new'.")
 GPIO.setup(e_list,GPIO.IN)
 GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
-
 
 ## PWMピンのチャンネル 配線を変えない限り触らない
 config.CHANNEL_STEERING = 14
