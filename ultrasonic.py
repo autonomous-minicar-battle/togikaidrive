@@ -55,11 +55,10 @@ if __name__ == "__main__":
     # 超音波センサを設定、使う分だけリストにultrasonicインスタンスを入れる
     #ultraconic = Ultraconic(config.t_list[0],config.e_list[0]) 
     ultrasonics = [] 
+    # 一つだけ使う場合、複数使う場合はコメントアウト外す
+    config.ultrasonics_list = ["Fr"]
     for name in config.ultrasonics_list:
         ultrasonics.append(Ultrasonic(name))
-
-    # 一つだけ使う場合, 5つ使う場合はコメントアコメント
-    ultrasonics = [Ultrasonic("Fr")] 
 
     print(" 下記の超音波センサを利用")
     print(" ", ultrasonics)
