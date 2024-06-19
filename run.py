@@ -1,6 +1,5 @@
 # coding:utf-8
 import config
-import RPi.GPIO as GPIO
 # ~~~出前授業用に一部のバラメータを変更
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
@@ -43,23 +42,23 @@ config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 
 ### GPIOピン番号の指示方法
 config.GPIO.cleanup()
-GPIO.setmode(GPIO.BOARD)
+config.GPIO.setmode(config.GPIO.BOARD)
 ### 新旧ボードの選択
-board = "old" #old：~2023年たこ足配線、new：新ボード
-if board == "old":
+config.board = "old" #old：~2023年たこ足配線、new：新ボード
+if config.board == "old":
     ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
-    e_list=[26,24,37,31,38]
+    config.e_list=[26,24,37,31,38]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
-    t_list=[15,13,35,32,36]
-elif board == "new": #new board
+    config.t_list=[15,13,35,32,36]
+elif config.board == "new": #new board
     ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
-    e_list=[11,13,15,29,31,33,35,37]
+    config.e_list=[11,13,15,29,31,33,35,37]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
-    t_list=[12,16,18,22,32,36,38,40]
+    config.t_list=[12,16,18,22,32,36,38,40]
 else:
     print("Please set board as 'old' or 'new'.")
-GPIO.setup(e_list,GPIO.IN)
-GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
+config.GPIO.setup(config.e_list,config.GPIO.IN)
+config.GPIO.setup(config.t_list,config.GPIO.OUT,initial=config.GPIO.LOW)
 
 ## PWMピンのチャンネル 配線を変えない限り触らない
 config.CHANNEL_STEERING = 14
