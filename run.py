@@ -41,28 +41,34 @@ config.recovery_time = 0.5
 config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 
 ### GPIOピン番号の指示方法
-config.GPIO.cleanup()
+### config内のGPIOの初期化
+config.GPIO.cleanup() 
 config.GPIO.setmode(config.GPIO.BOARD)
+
 ### 新旧ボードの選択
 config.board = "old" #old：~2023年たこ足配線、new：新ボード
+### GPIOピン番号の指示方法と超音波センサの位置の対応とPWMピンのチャンネル
+## !!!超音波センサとPWMの配線を変えない限り触らない
 if config.board == "old":
     ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
     config.e_list=[26,24,37,31,38]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
     config.t_list=[15,13,35,32,36]
+    config.CHANNEL_STEERING = 14
+    config.CHANNEL_THROTTLE = 13
+
 elif config.board == "new": #new board
     ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
     config.e_list=[11,13,15,29,31,33,35,37]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
     config.t_list=[12,16,18,22,32,36,38,40]
+    config.CHANNEL_STEERING = 1
+    config.CHANNEL_THROTTLE = 0
 else:
     print("Please set board as 'old' or 'new'.")
 config.GPIO.setup(config.e_list,config.GPIO.IN)
 config.GPIO.setup(config.t_list,config.GPIO.OUT,initial=config.GPIO.LOW)
 
-## PWMピンのチャンネル 配線を変えない限り触らない
-config.CHANNEL_STEERING = 14
-config.CHANNEL_THROTTLE = 13
 ## 操舵のPWM値
 config.STEERING_CENTER_PWM = 360
 config.STEERING_WIDTH_PWM = 80
@@ -78,7 +84,7 @@ config.THROTTLE_STOPPED_PWM = 370
 config.THROTTLE_FORWARD_PWM = 500
 config.THROTTLE_REVERSE_PWM = 240
 
-## thonny plotter
+## thonny plotterで値を見るときにTrue
 config.plotter = True
 ## 使わないライブラリOFF
 config.HAVE_CAMERA =False
@@ -104,9 +110,10 @@ import motor
 import planner
 if config.HAVE_CONTROLLER: import joystick
 if config.HAVE_CAMERA: import camera_multiprocess
-import gyro
+if config.HAVE_IMU: import gyro
 #import train_pytorch
 
+# First Person Viewでの走行画像表示
 if config.fpv:
     #img_sh = multiprocessing.sharedctypes.RawArray('i', config.img_size[0]*config.img_size[1]*config.img_size[2])
     data_sh = multiprocessing.sharedctypes.RawArray('i', (2,3))

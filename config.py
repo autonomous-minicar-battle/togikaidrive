@@ -112,45 +112,44 @@ sampling_cycle = 0.05
 ## 過去の超音波センサの値記録回数
 ultrasonics_Nrecords = 5
 
-## 超音波センサ初期設定(配線を変えない限り触らない！)
-## !!!超音波センサ初期設定、配線を変えない限り触らない
-### GPIOピン番号の指示方法
+# GPIOピン番号の指示方法と超音波センサの位置の対応とPWMピンのチャンネル
+## GPIOピン番号の指示方法
 GPIO.setmode(GPIO.BOARD)
 
-### GPIOピン番号の指示方法
+## 新旧ボードの指定
 board = "new" #old：~2023年たこ足配線、new：新ボード
+
+## !!!超音波センサとPWMの配線を変えない限り触らない
 if board == "old":
     ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
     e_list=[26,24,37,31,38]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
     t_list=[15,13,35,32,36]
+    ultrasonics_dict_trig = {"Fr":t_list[2], "FrLH":t_list[1], "RrLH":t_list[0], "FrRH":t_list[3], "RrRH":t_list[4]} 
+    ultrasonics_dict_echo = {"Fr":e_list[2], "FrLH":e_list[1], "RrLH":e_list[0], "FrRH":e_list[3], "RrRH":e_list[4]} 
+    CHANNEL_STEERING = 14 #old board
+    CHANNEL_THROTTLE = 13 #old board
+
 elif board == "new": #new board
     ### Echo -- Fr:26, FrLH:24, RrLH:37, FrRH:31, RrRH:38
     e_list=[11,13,15,29,31,33,35,37]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
     t_list=[12,16,18,22,32,36,38,40]
+    ultrasonics_dict_trig = {"Fr":t_list[0], "FrLH":t_list[1], "RrLH":t_list[2], "FrRH":t_list[3], "RrRH":t_list[4]} 
+    ultrasonics_dict_echo = {"Fr":e_list[0], "FrLH":e_list[1], "RrLH":e_list[2], "FrRH":e_list[3], "RrRH":e_list[4]} 
+    CHANNEL_STEERING = 1 #new board
+    CHANNEL_THROTTLE = 0 #new board
+
 else:
     print("Please set board as 'old' or 'new'.")
+
 GPIO.setup(e_list,GPIO.IN)
 GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
-
-## !!!超音波センサ初期設定、配線を変えない限り触らない
-#ultrasonics_dict_trig = {"Fr":t_list[0], "FrRH":t_list[1], "FrLH":t_list[2], "RrRH":t_list[3], "RrLH":t_list[4], "BackRH":t_list[5], "Back":t_list[6], "BackLH":t_list[7]} 
-#ultrasonics_dict_echo = {"Fr":e_list[0], "FrRH":e_list[1], "FrLH":e_list[2], "RrRH":e_list[3], "RrLH":e_list[4], "BackRH":e_list[5], "Back":e_list[6], "BackLH":e_list[7]}
-ultrasonics_dict_trig = {"Fr":t_list[0], "FrLH":t_list[1], "RrLH":t_list[2], "FrRH":t_list[3], "RrRH":t_list[4]} 
-ultrasonics_dict_echo = {"Fr":e_list[0], "FrLH":e_list[1], "RrLH":e_list[2], "FrRH":e_list[3], "RrRH":e_list[4]} 
 N_ultrasonics = len(ultrasonics_list)
-## !!!
 
 # スロットル/ステアリングモーター用 パラメーター
 ## 過去の操作値記録回数
 motor_Nrecords = 5
-
-## PWMピンのチャンネル 配線を変えない限り触らない
-#CHANNEL_STEERING = 14
-#CHANNEL_THROTTLE = 13
-CHANNEL_STEERING = 1 #new board
-CHANNEL_THROTTLE = 0 #new board
 
 ## 操舵のPWM値
 STEERING_CENTER_PWM = 360
@@ -160,7 +159,6 @@ STEERING_LEFT_PWM = STEERING_CENTER_PWM - STEERING_WIDTH_PWM
 ### !!!ステアリングを壊さないための上限下限の値設定  
 STEERING_RIGHT_PWM_LIMIT = 450
 STEERING_LEFT_PWM_LIMIT = 250
-
 
 ## アクセルのPWM値(motor.pyで調整した後値を入れる)
 ## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
