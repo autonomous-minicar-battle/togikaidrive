@@ -125,6 +125,8 @@ if board == "old":
     e_list=[26,24,37,31,38]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
     t_list=[15,13,35,32,36]
+    ultrasonics_dict_trig = {"Fr":t_list[0], "FrLH":t_list[1], "RrLH":t_list[2], "FrRH":t_list[3], "RrRH":t_list[4]} 
+    ultrasonics_dict_echo = {"Fr":e_list[0], "FrLH":e_list[1], "RrLH":e_list[2], "FrRH":e_list[3], "RrRH":e_list[4]} 
     CHANNEL_STEERING = 14 #old board
     CHANNEL_THROTTLE = 13 #old board
 
@@ -133,6 +135,8 @@ elif board == "new": #new board
     e_list=[11,13,15,29,31,33,35,37]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
     t_list=[12,16,18,22,32,36,38,40]
+    ultrasonics_dict_trig = {"Fr":t_list[0], "FrRH":t_list[1], "FrLH":t_list[2], "RrRH":t_list[3], "RrLH":t_list[4]} 
+    ultrasonics_dict_echo = {"Fr":e_list[0], "FrRH":e_list[1], "FrLH":e_list[2], "RrRH":e_list[3], "RrLH":e_list[4]} 
     CHANNEL_STEERING = 1 #new board
     CHANNEL_THROTTLE = 0 #new board
 
@@ -141,8 +145,6 @@ else:
 
 GPIO.setup(e_list,GPIO.IN)
 GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
-ultrasonics_dict_trig = {"Fr":t_list[0], "FrLH":t_list[1], "RrLH":t_list[2], "FrRH":t_list[3], "RrRH":t_list[4]} 
-ultrasonics_dict_echo = {"Fr":e_list[0], "FrLH":e_list[1], "RrLH":e_list[2], "FrRH":e_list[3], "RrRH":e_list[4]} 
 N_ultrasonics = len(ultrasonics_list)
 
 # スロットル/ステアリングモーター用 パラメーター

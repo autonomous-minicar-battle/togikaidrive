@@ -1,6 +1,8 @@
 # coding:utf-8
 import config
 # ~~~出前授業用に一部のバラメータを変更
+
+# ！！！出前授業用に生徒が変更するバラメータ　ここから ！！！　#
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
 config.FORWARD_S = 50 #ストレートでの値, joy_accel1
@@ -30,6 +32,8 @@ config.DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
 ##　選択肢："Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"
 config.mode_plan = "Right_Left_3" #"GoStraight"
 
+# ！！！出前授業用に生徒が変更するバラメータ　ここまで ！！！　#
+
 # 復帰モード選択
 config.mode_recovery = "Back" #None, Back, Stop
 config.recovery_time = 0.5
@@ -54,6 +58,8 @@ if config.board == "old":
     config.e_list=[26,24,37,31,38]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
     config.t_list=[15,13,35,32,36]
+    config.ultrasonics_dict_trig = {"Fr":config.t_list[0], "FrLH":config.t_list[1], "RrLH":config.t_list[2], "FrRH":config.t_list[3], "RrRH":config.t_list[4]} 
+    config.ultrasonics_dict_echo = {"Fr":config.e_list[0], "FrLH":config.e_list[1], "RrLH":config.e_list[2], "FrRH":config.e_list[3], "RrRH":config.e_list[4]} 
     config.CHANNEL_STEERING = 14
     config.CHANNEL_THROTTLE = 13
 
@@ -62,14 +68,14 @@ elif config.board == "new": #new board
     config.e_list=[11,13,15,29,31,33,35,37]
     ### Triger -- Fr:15, FrLH:13, RrLH:35, FrRH:32, RrRH:36
     config.t_list=[12,16,18,22,32,36,38,40]
+    config.ultrasonics_dict_trig = {"Fr":config.t_list[0], "FrRH":config.t_list[1], "FrLH":config.t_list[2], "RrRH":config.t_list[3], "RrLH":config.t_list[4]}
+    config.ultrasonics_dict_echo = {"Fr":config.e_list[0], "FrRH":config.e_list[1], "FrLH":config.e_list[2], "RrRH":config.e_list[3], "RrLH":config.e_list[4]}
     config.CHANNEL_STEERING = 1
     config.CHANNEL_THROTTLE = 0
 else:
     print("Please set board as 'old' or 'new'.")
 config.GPIO.setup(config.e_list,config.GPIO.IN)
 config.GPIO.setup(config.t_list,config.GPIO.OUT,initial=config.GPIO.LOW)
-config.ultrasonics_dict_trig = {"Fr":config.t_list[0], "FrLH":config.t_list[1], "RrLH":config.t_list[2], "FrRH":config.t_list[3], "RrRH":config.t_list[4]} 
-config.ultrasonics_dict_echo = {"Fr":config.e_list[0], "FrLH":config.e_list[1], "RrLH":config.e_list[2], "FrRH":config.e_list[3], "RrRH":config.e_list[4]} 
 
 ## 操舵のPWM値
 config.STEERING_CENTER_PWM = 360
