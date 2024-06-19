@@ -68,6 +68,8 @@ config.THROTTLE_STOPPED_PWM = 390
 config.THROTTLE_FORWARD_PWM = 540
 config.THROTTLE_REVERSE_PWM = 320
 
+## thonny plotter
+config.plotter = True
 ## 使わないライブラリOFF
 config.HAVE_CAMERA =False
 config.HAVE_IMU =False
@@ -251,7 +253,9 @@ try:
         ## 全体の状態を出力      
         #print("Rec:"+recording, "Mode:",mode,"RunTime:",ts_run ,"Str:",steer_pwm_duty,"Thr:",throttle_pwm_duty,"Uls:", message) #,end=' , '
         if mode == 'auto' : mode = config.mode_plan
-        print("Rec:{0}, Mode:{1}, RunTime:{2:>5}, Str:{3:>4}, Thr:{4:>4}, Uls:[ {5}]".format(recording, mode, ts_run, steer_pwm_duty, throttle_pwm_duty, message)) #,end=' , '
+        if config.plotter:
+              print(message)
+        else: print("Rec:{0}, Mode:{1}, RunTime:{2:>5}, Str:{3:>4}, Thr:{4:>4}, Uls:[ {5}]".format(recording, mode, ts_run, steer_pwm_duty, throttle_pwm_duty, message)) #,end=' , '
 
         ## 後退/停止操作（簡便のため、判断も同時に実施） 
         if config.mode_recovery == "None":
