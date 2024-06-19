@@ -86,12 +86,11 @@ from multiprocessing import Process
 
 print("ライブラリの初期化に数秒かかります...")
 # togikaidriveのモジュール
-#import config
 import ultrasonic
 import motor
 import planner
-import joystick
-import camera_multiprocess
+if config.HAVE_CONTROLLER: import joystick
+if config.HAVE_CAMERA: import camera_multiprocess
 import gyro
 #import train_pytorch
 
@@ -110,7 +109,7 @@ recording = True
 
 # 画像保存
 #running = Value("b", True)
-if not config.fpv:
+if config.HAVE_CONTROLLER and not config.fpv:
     print("Start taking pictures in ",config.image_dir)
     cam = camera_multiprocess.VideoCaptureWrapper(0)
     print("【 ◎*】Capture started! \n")
@@ -244,7 +243,7 @@ try:
         if recording:
             d_stack = np.vstack((d_stack, np.insert(d, 0, [ts, steer_pwm_duty, throttle_pwm_duty]),))
             ### 画像保存 ret:カメラ認識、img：画像
-            if not config.fpv:
+            if config.HAVE_CONTROLLER and not config.fpv:
                 ret, img = cam.read()
                 cam.save(img, ts, steer_pwm_duty, throttle_pwm_duty, config.image_dir)
 

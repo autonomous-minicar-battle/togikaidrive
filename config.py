@@ -173,6 +173,7 @@ if not os.path.exists(records):
 record_filename = './'+records+'/record_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
 ## 画像
+HAVE_CAMERA = True
 img_size = (120, 160, 3)
 images = "images"
 if not os.path.exists(images):
