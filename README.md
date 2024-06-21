@@ -198,7 +198,11 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       python BNO055.py
       ~~~
 
-      - 他
+      - oledディスプレイの設定
+         - rc.localがある場合  
+         https://github.com/FaBoPlatform/ip_address_display
+         - rc.localがない場合
+      https://qiita.com/karaage0703/items/ed18f318a1775b28eab4#systemd-%E3%82%92%E4%BD%BF%E3%81%86%E6%96%B9%E6%B3%95
 
 
 

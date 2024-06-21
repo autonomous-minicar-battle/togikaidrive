@@ -116,10 +116,11 @@ print("ライブラリの初期化に数秒かかります...")
 import ultrasonic
 import motor
 import planner
+# 以下はconfig.pyでの設定によりimport
 if config.HAVE_CONTROLLER: import joystick
 if config.HAVE_CAMERA: import camera_multiprocess
 if config.HAVE_IMU: import gyro
-#import train_pytorch
+if config.HAVE_NN: import train_pytorch
 
 # First Person Viewでの走行画像表示
 if config.fpv:
@@ -160,9 +161,10 @@ print(" ", config.ultrasonics_list)
 plan = planner.Planner(config.mode_plan)
 
 # NNモデルの読み込み
-#model_path = "models"
+model_path = "models"
 #model_name = "model_20210901_20210901_20210901_epoch_100.pth"
-#model = train_pytorch.load_model(os.path.join(model_path, model_name))
+model_name = "model_20240527_record_20240519_224821.csv.pth"
+model = train_pytorch.load_model(os.path.join(model_path, model_name))
 
 #　imuの初期化
 if config.HAVE_IMU:

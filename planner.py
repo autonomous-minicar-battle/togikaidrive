@@ -3,7 +3,7 @@ import numpy as np
 import ultrasonic
 import config
 import time
-#import torch
+if config.HAVE_NN: import torch
 
 class Planner:
     def __init__(self, name):
@@ -153,9 +153,10 @@ class Planner:
         return steer_pwm_duty_pid*self.steer_pwm_duty, self.throttle_pwm_duty
 
     # Neural Netを用いた走行
-    def NN(self, model, ultrasonic_FrLH, ultrasonic_Fr, ultrasonic_FrRH):
-        ## モーターへ出力を返す
-        input = torch.tensor([ultrasonic_FrLH, ultrasonic_Fr, ultrasonic_FrRH])
-        self.steer_pwm_duty, self.throttle_pwm_duty = model.predict(model, input)
-        print(self.message)
-        return self.steer_pwm_duty, self.throttle_pwm_duty
+    if config.HAVE_NN:
+        def NN(self, model, ultrasonic_FrLH, ultrasonic_Fr, ultrasonic_FrRH):
+            ## モーターへ出力を返す
+            input = torch.tensor([ultrasonic_FrLH, ultrasonic_Fr, ultrasonic_FrRH])
+            self.steer_pwm_duty, self.throttle_pwm_duty = model.predict(model, input)*100
+            print(self.message)
+            return self.steer_pwm_duty, self.throttle_pwm_duty

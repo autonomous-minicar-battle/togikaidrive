@@ -90,10 +90,11 @@ IMSHOW = False #　画像を表示するか
 
 
 # NNパラメータ
-#Nnode = 3
-#Nlayer = 3
-#model = "linear" #"categorical"
-#Ncategory = 5
+HAVE_NN = True
+Nnode = 3
+Nlayer = 3
+model = "linear" #"categorical"
+Ncategory = 5
 
 # 超音波センサの設定
 ## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
