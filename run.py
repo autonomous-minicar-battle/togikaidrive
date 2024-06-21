@@ -1,7 +1,7 @@
 # coding:utf-8
 import config
-# ~~~出前授業用に一部のバラメータを変更
 
+# ~~~出前授業用に一部のバラメータを変更
 # ！！！出前授業用に生徒が変更するバラメータ　ここから ！！！　#
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
@@ -44,10 +44,6 @@ config.recovery_time = 0.5
 ### ５つ使う場合はこちらをコメントアウト外す
 config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 
-### GPIOピン番号の指示方法
-### config内のGPIOの初期化
-config.GPIO.cleanup() 
-config.GPIO.setmode(config.GPIO.BOARD)
 
 ### 新旧ボードの選択
 config.board = "old" #old：~2023年たこ足配線、new：新ボード
@@ -74,8 +70,6 @@ elif config.board == "new": #new board
     config.CHANNEL_THROTTLE = 0
 else:
     print("Please set board as 'old' or 'new'.")
-config.GPIO.setup(config.e_list,config.GPIO.IN)
-config.GPIO.setup(config.t_list,config.GPIO.OUT,initial=config.GPIO.LOW)
 
 ## 操舵のPWM値
 config.STEERING_CENTER_PWM = 360
@@ -105,6 +99,12 @@ config.fpv = False
 # 一般的な外部ライブラリ
 import os
 import RPi.GPIO as GPIO
+GPIO.setwarnings(False)
+## GPIOピン番号の指示方法
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(config.e_list,GPIO.IN)
+GPIO.setup(config.t_list,GPIO.OUT,initial=GPIO.LOW)
+
 import time
 import numpy as np
 import sys
@@ -161,10 +161,16 @@ print(" ", config.ultrasonics_list)
 plan = planner.Planner(config.mode_plan)
 
 # NNモデルの読み込み
-model_path = "models"
-#model_name = "model_20210901_20210901_20210901_epoch_100.pth"
-model_name = "model_20240527_record_20240519_224821.csv.pth"
-model = train_pytorch.load_model(os.path.join(model_path, model_name))
+if config.HAVE_NN:
+    ## NNモデルの初期化
+    ## 使う超音波センサの数、出力数、隠れ層の次元、隠れ層の数
+    model = train_pytorch.NeuralNetwork(
+        len(config.ultrasonics_list), 2,
+        config.hidden_dim, config.num_hidden_layers)
+    ## 保存したモデルをロード
+    print("\n保存したモデルをロードします。")
+    train_pytorch.load_model(model, None, config.model_dir)
+    print(model)
 
 #　imuの初期化
 if config.HAVE_IMU:
@@ -224,7 +230,11 @@ try:
             steer_pwm_duty, throttle_pwm_duty  = plan.RightHand_PID(ultrasonics["FrRH"], ultrasonics["RrRH"])
         ## ニューラルネットを使ってスムーズに走る
         #評価中
-            steer_pwm_duty, throttle_pwm_duty  = plan.NN(model, ultrasonics["FrLH"].dis, ultrasonics["Fr"].dis, ultrasonics["FrRH"].dis)
+        elif config.mode_plan == "NN":
+            # 超音波センサ入力が変更できるように引数をリストにして渡す形に変更
+            args = [ultrasonics[key].dis for key in config.ultrasonics_list]
+            steer_pwm_duty, throttle_pwm_duty = plan.NN(model, *args)
+            #steer_pwm_duty, throttle_pwm_duty  = plan.NN(model, ultrasonics["FrLH"].dis, ultrasonics["Fr"].dis, ultrasonics["FrRH"].dis)
         else: 
             print("デフォルトの判断モードの選択ではありません, コードを書き換えてオリジナルのモードを実装しよう!")
             break
@@ -317,7 +327,7 @@ finally:
     print('\n停止')
     motor.set_throttle_pwm_duty(config.STOP)
     motor.set_steer_pwm_duty(config.NUTRAL)
-    config.GPIO.cleanup()
+    GPIO.cleanup()
     header ="Tstamp, Str, Thr, "
     for name in config.ultrasonics_list:
         header += name + ", "        

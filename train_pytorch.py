@@ -7,6 +7,8 @@ from torch import nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 
+import config
+
 # データの読み込みと前処理
 def load_data():
     folder = "records"
@@ -41,6 +43,7 @@ def load_data():
         csv_file = csv_files[0]
         csv_path = os.path.join(folder, csv_file)
         df = pd.read_csv(csv_path)
+    print("入力データのヘッダー確認:\n", df.columns)
 
     x = df.iloc[:, 3:]
     y = df.iloc[:, 1:3]
@@ -65,20 +68,33 @@ class CustomDataset(torch.utils.data.Dataset):
 
 # モデルの定義
 class NeuralNetwork(nn.Module):
-    def __init__(self, input_dim, output_dim):
+    def __init__(self, input_dim, output_dim,hidden_dim, num_hidden_layers):
         super(NeuralNetwork, self).__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(input_dim, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, output_dim)
-        )
+        ## 変数で層を追加
+        layers = []
+        layers.append(nn.Linear(input_dim, hidden_dim))
+        layers.append(nn.ReLU())
+
+        for _ in range(num_hidden_layers - 1):
+                    layers.append(nn.Linear(hidden_dim, hidden_dim))
+                    layers.append(nn.ReLU())
+
+        layers.append(nn.Linear(hidden_dim, output_dim))
+
+        self.layers = nn.Sequential(*layers)
+
+        # 手動で層を追加
+        #self.layers = nn.Sequential(
+        #    nn.Linear(input_dim, 64),
+        #    nn.ReLU(),
+        #    nn.Linear(64, 64),
+        #    nn.ReLU(),
+        #    nn.Linear(64, output_dim)
+        #)
 
     def forward(self, x):
         x = self.layers(x)
-        x = F.softmax(x, dim=1)
-        return self.layers(x)
+        return x
 
 # トレーニング関数
 def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=100):
@@ -99,6 +115,7 @@ def predict(model, x_tensor):
     model.eval()  # モデルを評価モードに設定
     with torch.no_grad():
         predictions = model(x_tensor)
+        predictions = F.softmax(predictions, dim=1)
     return predictions
 
 # モデル保存関数
@@ -106,7 +123,7 @@ def save_model(model, optimizer, folder, csv_file, epoch):
     if not os.path.exists(folder):
         os.makedirs(folder)
     date_str = datetime.datetime.now().strftime('%Y%m%d')
-    model_name = f'model_{date_str}_{csv_file}_epoch_{epoch}.pth'
+    model_name = f'model_{date_str}_{csv_file}_epoch_{epoch}_{config.ultrasonics_list_join}.pth'
     torch.save({
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
@@ -114,32 +131,36 @@ def save_model(model, optimizer, folder, csv_file, epoch):
     }, os.path.join(folder, model_name))
     print(f"モデルを保存しました: {model_name}")
 
-'''
-# モデル読み込み関数
-def load_model(model, optimizer, folder, csv_file, epoch):
-    model_path = f'models/model_{csv_file}_epoch_{epoch}.pth'
-    checkpoint = torch.load(model_path)
-    model.load_state_dict(checkpoint['model_state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    return checkpoint['epoch']
-'''
-# モデル読み込み関数
-def load_model(model, optimizer, folder, csv_file):
-    model_files = [file for file in os.listdir(folder) if file.startswith(f'model_')]
+
+def load_model(model, optimizer=None, folder='.'):
+    """
+    モデルを指定したフォルダーから読み込む関数。
+    
+    Args:
+    - model: PyTorchモデルのインスタンス
+    - optimizer: PyTorchのoptimizerのインスタンス（省略可能）
+    - folder: モデルファイルが保存されているフォルダー
+
+    Returns:
+    - epoch: 読み込んだモデルのエポック数（失敗時は0）
+    """
+    model_files = [file for file in os.listdir(folder) if file.startswith('model_')]
     if model_files:
         print("利用可能なモデル:")
         print(model_files)
-        model_name = input("読み込むモデル名を入力してください: ")
+        model_name = input("読み込むモデル名を入力してください.\n！注意！過去にモデル構造を変更している場合は読み込めませんので、config.pyを編集してください。\n: ")
         model_path = os.path.join(folder, model_name)
         checkpoint = torch.load(model_path)
         model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        if optimizer:
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            print("オプティマイザの状態も読み込みました。")
         print(f"モデルを読み込みました: {model_name}")
-        return checkpoint['epoch']
+        return checkpoint.get('epoch', 0)
     else:
         print("利用可能なモデルが見つかりませんでした。")
         return 0
-
+    
 def main():
     # データのロード
     x_tensor, y_tensor, csv_file = load_data()
@@ -151,20 +172,22 @@ def main():
     # モデルの作成
     input_dim = x_tensor.shape[1]
     output_dim = y_tensor.shape[1]
-    model = NeuralNetwork(input_dim, output_dim)
+    model = NeuralNetwork(input_dim, output_dim, config.hidden_dim, config.num_hidden_layers)
     
     # 損失関数と最適化手法の設定
     criterion = nn.MSELoss()  # 仮定: 回帰タスク
     optimizer = torch.optim.Adam(model.parameters())
         
     # モデルの読み込み
-    continue_training = input("続きから学習を再開しますか？ (y/n): ").strip().lower() == 'y'
+    continue_training = input("続きから学習を再開しますか？ (y): ").strip().lower() == 'y'
     start_epoch = 0
     
     if continue_training:
-        start_epoch = load_model(model, optimizer, 'models', csv_file)
-        epochs = int(input("学習するエポック数を入力してください: ").strip())
-
+        start_epoch = load_model(model, optimizer, 'models')
+    else: start_epoch =0
+    try: epochs = int(input("学習するエポック数を入力してください.(デフォルト:100): ").strip())
+    except ValueError: epochs = 100
+    
     # モデルのトレーニング
     epoch = train_model(model, dataloader, criterion, optimizer, start_epoch=start_epoch, epochs=epochs)
     
@@ -172,8 +195,23 @@ def main():
     save_model(model, optimizer, 'models', csv_file, epoch)
     
     # 推論の実行例
-    print("推論の実行例です。")
-    predictions = predict(model, x_tensor)
+    ## NNモデルの読み込み
+    #model = NeuralNetwork(input_dim, output_dim)
+    model_dir = "models"
+    model_name = "model_20240527_record_20240519_224821.csv.pth"
+    model_path = os.path.join(model_dir, model_name)
+ 
+   # 保存したモデルを再度ロード
+    print("\n保存したモデルを再度ロードします。")
+    load_model(model, None, model_dir)
+    print(model)
+ 
+    print("\n推論の実行例です。")
+    input_example = x_tensor[:4]
+    predictions = predict(model, input_example)
+    print("\n入力データ:")
+    print(input_example)
+    print("\n予測結果:")
     print(predictions)
 
 if __name__ == "__main__":

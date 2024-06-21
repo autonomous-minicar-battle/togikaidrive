@@ -1,6 +1,4 @@
 # coding:utf-8
-import RPi.GPIO as GPIO
-GPIO.setwarnings(False)
 import datetime
 import os
 
@@ -91,10 +89,12 @@ IMSHOW = False #　画像を表示するか
 
 # NNパラメータ
 HAVE_NN = True
-Nnode = 3
-Nlayer = 3
-model = "linear" #"categorical"
-Ncategory = 5
+model_dir = "models"
+model_name = "model_20240527_record_20240519_224821.csv.pth"
+model_path = os.path.join(model_dir, model_name)
+hidden_dim = 64 #（隠れ層のノード数）
+num_hidden_layers = 5 #（隠れ層の数）
+
 
 # 超音波センサの設定
 ## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
@@ -105,6 +105,9 @@ ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 ### ８つ使う場合ははこちらのコメントアウト外す
 #ultrasonics_list.extend(["BackRH", "Back", "BackLH"])
 
+#ほかのファイルで使うためリスト接続名
+ultrasonics_list_join = "uls_"+"_".join(ultrasonics_list)
+
 ## 超音波センサの測定回数、ultrasonic.pyチェック用
 sampling_times = 100
 ## 目標サンプリング周期（何秒に１回）、複数センサ利用の場合は合計値、
@@ -113,10 +116,7 @@ sampling_cycle = 0.05
 ## 過去の超音波センサの値記録回数
 ultrasonics_Nrecords = 5
 
-# GPIOピン番号の指示方法と超音波センサの位置の対応とPWMピンのチャンネル
-## GPIOピン番号の指示方法
-GPIO.setmode(GPIO.BOARD)
-
+# GPIOピン番号:超音波センサの位置の対応とPWMピンのチャンネル
 ## 新旧ボードの指定
 board = "new" #old：~2023年たこ足配線、new：新ボード
 
@@ -144,8 +144,6 @@ elif board == "new": #new board
 else:
     print("Please set board as 'old' or 'new'.")
 
-GPIO.setup(e_list,GPIO.IN)
-GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
 N_ultrasonics = len(ultrasonics_list)
 
 # スロットル/ステアリングモーター用 パラメーター

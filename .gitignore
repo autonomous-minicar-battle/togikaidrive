@@ -3,3 +3,4 @@ records/*
 images/*
 .DS_STORE
 __pycache__/*
+test* 
