@@ -168,8 +168,8 @@ if config.HAVE_NN:
         len(config.ultrasonics_list), 2,
         config.hidden_dim, config.num_hidden_layers)
     ## 保存したモデルをロード
-    print("\n保存したモデルをロードします。")
-    train_pytorch.load_model(model, None, config.model_dir)
+    print("\n保存したモデルをロードします: ", config.model_path)
+    train_pytorch.load_model(model, config.model_path, None, config.model_dir)
     print(model)
 
 #　imuの初期化
@@ -328,12 +328,17 @@ finally:
     motor.set_throttle_pwm_duty(config.STOP)
     motor.set_steer_pwm_duty(config.NUTRAL)
     GPIO.cleanup()
-    header ="Tstamp, Str, Thr, "
+    header ="Tstamp,Str,Thr,"
     for name in config.ultrasonics_list:
-        header += name + ", "        
+        header += name + ","
+    header = header[:-1]        
     np.savetxt(config.record_filename, d_stack[1:], delimiter=',',  fmt='%10.2f', header=header, comments="")
-    #np.savetxt(config.record_filename, d_stack, fmt='%.3e',header=header, comments="")
+    #np.savetxt(config.record_filename, d_stack[1:], fmt='4f',header=header, comments="")
     print('記録停止')
     print("記録保存--> ",config.record_filename)
     print("画像保存--> ",config.image_dir)
 
+header ="Tstamp, Str, Thr, "
+for name in config.ultrasonics_list:
+    header += name + ", "
+header = header[:-1]        

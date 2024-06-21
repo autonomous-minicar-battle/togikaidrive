@@ -30,9 +30,8 @@ DETECTION_DISTANCE_TARGET = 180 #目標距離
 DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
 
 # 判断モード選択
-##　選択肢："Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"
-mode_plan = "Right_Left_3"
 model_plan_list = ["GoStraight","Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"]
+mode_plan = "Right_Left_3"
 ## 判断結果出力、Thonyのplotterを使うならFalse
 print_plan_result = False
 ## PIDパラメータ(PDまでを推奨)
@@ -44,57 +43,10 @@ K_D = 0.3 #0.3
 mode_recovery = "Back" #None, Back, Stop
 recovery_time = 0.5
 
-# ジャイロを使った動的制御モード選択
-HAVE_IMU = False #True
-mode_dynamic_control = "GCounter" #GVectoring
-
 # Thonnyのplotterを使う場合
 plotter = False
 
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
-# コントローラー（ジョイスティックの設定）
-HAVE_CONTROLLER = False #True
-JOYSTICK_STEERING_SCALE = -1.0       #some people want a steering that is less sensitve. This scalar is multiplied with the steering -1 to 1. It can be negative to reverse dir.
-JOYSTICK_THROTTLE_SCALE = -1.0       #some people want a throttle that is less sensitve. 
-#AUTO_RECORD_ON_THROTTLE = False      #if true, we will record whenever throttle is not zero. if false, you must manually toggle recording with some other trigger. Usually circle button on joystick.
-#CONTROLLER_TYPE = 'F710'            #(ps3|ps4|xbox|pigpio_rc|nimbus|wiiu|F710|rc3|MM1|custom) custom will run the my_joystick.py controller written by the `donkey createjs` command
-JOYSTICK_DEVICE_FILE = "/dev/input/js0" 
-## ジョイスティックのボタンとスティック割り当て
-# F710の操作設定 #割り当て済み
-JOYSTICK_A = 0 #アクセル１
-JOYSTICK_B = 1 #アクセル２
-JOYSTICK_X = 2 #ブレーキ
-JOYSTICK_Y = 3 #記録停止開始
-JOYSTICK_LB = 4
-JOYSTICK_RB = 5
-JOYSTICK_BACK = 6
-JOYSTICK_S = 7 #自動/手動走行切り替え
-JOYSTICK_Logi = 8
-JOYSTICK_LSTICKB = 9
-JOYSTICK_RSTICKB = 10
-JOYSTICK_AXIS_LEFT = 0 #ステアリング（左右）
-JOYSTICK_AXIS_RIGHT = 4 #スロットル（上下）
-JOYSTICK_HAT_LR = 0
-JOYSTICK_HAT_DU = 1
-
-# カメラの設定
-IMAGE_W = 160
-IMAGE_H = 120
-IMAGE_DEPTH = 3         # default RGB=3, make 1 for mono
-CAMERA_FRAMERATE = 20 #DRIVE_LOOP_HZ
-CAMERA_VFLIP = False
-CAMERA_HFLIP = False
-IMSHOW = False #　画像を表示するか
-
-
-# NNパラメータ
-HAVE_NN = True
-model_dir = "models"
-model_name = "model_20240527_record_20240519_224821.csv.pth"
-model_path = os.path.join(model_dir, model_name)
-hidden_dim = 64 #（隠れ層のノード数）
-num_hidden_layers = 5 #（隠れ層の数）
-
 
 # 超音波センサの設定
 ## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
@@ -105,7 +57,7 @@ ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 ### ８つ使う場合ははこちらのコメントアウト外す
 #ultrasonics_list.extend(["BackRH", "Back", "BackLH"])
 
-#ほかのファイルで使うためリスト接続名
+### ほかのファイルで使うためリスト接続名
 ultrasonics_list_join = "uls_"+"_".join(ultrasonics_list)
 
 ## 超音波センサの測定回数、ultrasonic.pyチェック用
@@ -177,6 +129,48 @@ if not os.path.exists(records):
 ## 記録したcsvファイル名
 record_filename = './'+records+'/record_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
+# NNパラメータ
+HAVE_NN = True
+model_dir = "models"
+model_name = "model_20240527_record_20240519_224821.csv.pth"
+model_path = os.path.join(model_dir, model_name)
+hidden_dim = 64 #（隠れ層のノード数）
+num_hidden_layers = 3 #（隠れ層の数）
+
+# コントローラー（ジョイスティックの設定）
+HAVE_CONTROLLER = False #True
+JOYSTICK_STEERING_SCALE = -1.0       #some people want a steering that is less sensitve. This scalar is multiplied with the steering -1 to 1. It can be negative to reverse dir.
+JOYSTICK_THROTTLE_SCALE = -1.0       #some people want a throttle that is less sensitve. 
+#AUTO_RECORD_ON_THROTTLE = False      #if true, we will record whenever throttle is not zero. if false, you must manually toggle recording with some other trigger. Usually circle button on joystick.
+#CONTROLLER_TYPE = 'F710'            #(ps3|ps4|xbox|pigpio_rc|nimbus|wiiu|F710|rc3|MM1|custom) custom will run the my_joystick.py controller written by the `donkey createjs` command
+JOYSTICK_DEVICE_FILE = "/dev/input/js0" 
+## ジョイスティックのボタンとスティック割り当て
+# F710の操作設定 #割り当て済み
+JOYSTICK_A = 0 #アクセル１
+JOYSTICK_B = 1 #アクセル２
+JOYSTICK_X = 2 #ブレーキ
+JOYSTICK_Y = 3 #記録停止開始
+JOYSTICK_LB = 4
+JOYSTICK_RB = 5
+JOYSTICK_BACK = 6
+JOYSTICK_S = 7 #自動/手動走行切り替え
+JOYSTICK_Logi = 8
+JOYSTICK_LSTICKB = 9
+JOYSTICK_RSTICKB = 10
+JOYSTICK_AXIS_LEFT = 0 #ステアリング（左右）
+JOYSTICK_AXIS_RIGHT = 4 #スロットル（上下）
+JOYSTICK_HAT_LR = 0
+JOYSTICK_HAT_DU = 1
+
+# カメラの設定
+IMAGE_W = 160
+IMAGE_H = 120
+IMAGE_DEPTH = 3         # default RGB=3, make 1 for mono
+CAMERA_FRAMERATE = 20 #DRIVE_LOOP_HZ
+CAMERA_VFLIP = False
+CAMERA_HFLIP = False
+IMSHOW = False #　画像を表示するか
+
 ## 画像
 HAVE_CAMERA = False
 img_size = (120, 160, 3)
@@ -189,6 +183,12 @@ if not os.path.exists(images):
 image_dir = './'+images+'/image_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 os.makedirs(image_dir)
 print("make dir as ",image_dir)
+
+#↑↑↑ルールベース/機械学習講座向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+# その他
+# ジャイロを使った動的制御モード選択
+HAVE_IMU = False #True
+mode_dynamic_control = "GCounter" #GVectoring
 
 # FPV 下記のport番号
 ## fpvがONの時は画像保存なし

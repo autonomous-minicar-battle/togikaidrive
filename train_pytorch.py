@@ -44,7 +44,9 @@ def load_data():
         csv_path = os.path.join(folder, csv_file)
         df = pd.read_csv(csv_path)
     print("入力データのヘッダー確認:\n", df.columns)
+    print("データの確認:\n", df.head())
 
+    #df.iloc[:, 1:] = df.iloc[:, 1:].astype(int)
     x = df.iloc[:, 3:]
     y = df.iloc[:, 1:3]
     x_tensor = torch.tensor(x.values, dtype=torch.float32)
@@ -124,15 +126,17 @@ def save_model(model, optimizer, folder, csv_file, epoch):
         os.makedirs(folder)
     date_str = datetime.datetime.now().strftime('%Y%m%d')
     model_name = f'model_{date_str}_{csv_file}_epoch_{epoch}_{config.ultrasonics_list_join}.pth'
+    model_path = os.path.join(folder, model_name)
     torch.save({
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict()
-    }, os.path.join(folder, model_name))
-    print(f"モデルを保存しました: {model_name}")
+    }, model_path)
+    print(f"モデルを保存しました: {model_path}")
+    return model_path
 
 
-def load_model(model, optimizer=None, folder='.'):
+def load_model(model, model_path=None,optimizer=None, folder='.'):
     """
     モデルを指定したフォルダーから読み込む関数。
     
@@ -144,22 +148,31 @@ def load_model(model, optimizer=None, folder='.'):
     Returns:
     - epoch: 読み込んだモデルのエポック数（失敗時は0）
     """
-    model_files = [file for file in os.listdir(folder) if file.startswith('model_')]
-    if model_files:
-        print("利用可能なモデル:")
-        print(model_files)
-        model_name = input("読み込むモデル名を入力してください.\n！注意！過去にモデル構造を変更している場合は読み込めませんので、config.pyを編集してください。\n: ")
-        model_path = os.path.join(folder, model_name)
+    if model_path:
         checkpoint = torch.load(model_path)
         model.load_state_dict(checkpoint['model_state_dict'])
         if optimizer:
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             print("オプティマイザの状態も読み込みました。")
-        print(f"モデルを読み込みました: {model_name}")
+        print(f"モデルを読み込みました: {model_path}")
         return checkpoint.get('epoch', 0)
     else:
-        print("利用可能なモデルが見つかりませんでした。")
-        return 0
+        model_files = [file for file in os.listdir(folder) if file.startswith('model_')]
+        if model_files:
+            print("利用可能なモデル:")
+            print(model_files)
+            model_name = input("読み込むモデル名を入力してください.\n！注意！過去にモデル構造を変更している場合は読み込めませんので、config.pyを編集してください。\n: ")
+            model_path = os.path.join(folder, model_name)
+            checkpoint = torch.load(model_path)
+            model.load_state_dict(checkpoint['model_state_dict'])
+            if optimizer:
+                optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+                print("オプティマイザの状態も読み込みました。")
+            print(f"モデルを読み込みました: {model_name}")
+            return checkpoint.get('epoch', 0)
+        else:
+            print("利用可能なモデルが見つかりませんでした。")
+            return 0
     
 def main():
     # データのロード
@@ -183,7 +196,7 @@ def main():
     start_epoch = 0
     
     if continue_training:
-        start_epoch = load_model(model, optimizer, 'models')
+        start_epoch = load_model(model, None, optimizer, 'models')
     else: start_epoch =0
     try: epochs = int(input("学習するエポック数を入力してください.(デフォルト:100): ").strip())
     except ValueError: epochs = 100
@@ -192,18 +205,18 @@ def main():
     epoch = train_model(model, dataloader, criterion, optimizer, start_epoch=start_epoch, epochs=epochs)
     
     # モデルの保存
-    save_model(model, optimizer, 'models', csv_file, epoch)
+    model_path = save_model(model, optimizer, 'models', csv_file, epoch)
     
     # 推論の実行例
     ## NNモデルの読み込み
     #model = NeuralNetwork(input_dim, output_dim)
     model_dir = "models"
-    model_name = "model_20240527_record_20240519_224821.csv.pth"
-    model_path = os.path.join(model_dir, model_name)
+    #model_name = config.model_name #"model_20240527_record_20240519_224821.csv.pth"
+    #model_path = os.path.join(model_dir, model_name)
  
    # 保存したモデルを再度ロード
     print("\n保存したモデルを再度ロードします。")
-    load_model(model, None, model_dir)
+    load_model(model, model_path, None, model_dir)
     print(model)
  
     print("\n推論の実行例です。")
