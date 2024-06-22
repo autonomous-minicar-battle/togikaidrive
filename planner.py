@@ -158,6 +158,6 @@ class Planner:
             ultrasonic_values = args
             input = torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0)
             self.steer_pwm_duty = int(model.predict(model, input).squeeze(0)[0] *100)
-            self.throttle_pwm_duty = int(model.predict(model, input).squeeze(0[1]) *100)
+            self.throttle_pwm_duty = int(model.predict(model, input).squeeze(0)[1] *100)
             print(self.message)
             return self.steer_pwm_duty, self.throttle_pwm_duty
