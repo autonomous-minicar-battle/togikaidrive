@@ -30,7 +30,7 @@ config.DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
 
 # 判断モード選択
 ##　選択肢："Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"
-config.mode_plan = "Right_Left_3" #"GoStraight"
+config.mode_plan = "NN" #"GoStraight"
 
 # ！！！出前授業用に生徒が変更するバラメータ　ここまで ！！！　#
 

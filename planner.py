@@ -156,7 +156,7 @@ class Planner:
         def NN(self, model, *args):
             ## モーターへ出力を返す
             ultrasonic_values = args
-            input = torch.tensor(ultrasonic_values)
+            input = torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0)
             self.steer_pwm_duty, self.throttle_pwm_duty = model.predict(model, input)*100
             print(self.message)
             return self.steer_pwm_duty, self.throttle_pwm_duty

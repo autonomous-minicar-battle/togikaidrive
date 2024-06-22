@@ -99,7 +99,7 @@ class NeuralNetwork(nn.Module):
         return x
 
     # 推論関数
-    def predict(model, x_tensor):
+    def predict(self, model, x_tensor):
         model.eval()  # モデルを評価モードに設定
         with torch.no_grad():
             predictions = model(x_tensor)
@@ -222,7 +222,7 @@ def main():
  
     print("\n推論の実行例です。")
     input_example = x_tensor[:4]
-    predictions = predict(model, input_example)
+    predictions = model.predict(model, input_example)
     print("\n入力データ:")
     print(input_example)
     print("\n予測結果:")
