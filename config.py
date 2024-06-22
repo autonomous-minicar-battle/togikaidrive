@@ -132,7 +132,8 @@ record_filename = './'+records+'/record_' + datetime.datetime.now().strftime('%Y
 # NNパラメータ
 HAVE_NN = True
 model_dir = "models"
-model_name = "model_20240527_record_20240519_224821.csv.pth"
+#model_name = "model_20240527_record_20240519_224821.csv.pth"
+model_name = "model_20240622_record_20240622_043413.csv_epoch_100_uls_RrLH_FrLH_Fr_FrRH_RrRH.pth"
 model_path = os.path.join(model_dir, model_name)
 hidden_dim = 64 #（隠れ層のノード数）
 num_hidden_layers = 3 #（隠れ層の数）

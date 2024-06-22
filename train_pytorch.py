@@ -98,6 +98,14 @@ class NeuralNetwork(nn.Module):
         x = self.layers(x)
         return x
 
+    # 推論関数
+    def predict(model, x_tensor):
+        model.eval()  # モデルを評価モードに設定
+        with torch.no_grad():
+            predictions = model(x_tensor)
+            predictions = F.softmax(predictions, dim=1)
+        return predictions
+
 # トレーニング関数
 def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=100):
     model.train()  # モデルをトレーニングモードに設定
@@ -112,13 +120,6 @@ def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=1
     print("トレーニングが完了しました。")
     return epoch+1
     
-# 推論関数
-def predict(model, x_tensor):
-    model.eval()  # モデルを評価モードに設定
-    with torch.no_grad():
-        predictions = model(x_tensor)
-        predictions = F.softmax(predictions, dim=1)
-    return predictions
 
 # モデル保存関数
 def save_model(model, optimizer, folder, csv_file, epoch):

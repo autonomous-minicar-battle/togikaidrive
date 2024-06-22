@@ -46,7 +46,7 @@ config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 
 
 ### 新旧ボードの選択
-config.board = "old" #old：~2023年たこ足配線、new：新ボード
+config.board = "new" #old：~2023年たこ足配線、new：新ボード
 ### GPIOピン番号の指示方法と超音波センサの位置の対応とPWMピンのチャンネル
 ## !!!超音波センサとPWMの配線を変えない限り触らない
 if config.board == "old":

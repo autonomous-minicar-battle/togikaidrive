@@ -153,9 +153,10 @@ class Planner:
 
     # Neural Netを用いた走行
     if config.HAVE_NN:
-        def NN(self, model, *ultrasonic_values):
+        def NN(self, model, *args):
             ## モーターへ出力を返す
-            input = torch.tensor(*ultrasonic_values)
+            ultrasonic_values = args
+            input = torch.tensor(ultrasonic_values)
             self.steer_pwm_duty, self.throttle_pwm_duty = model.predict(model, input)*100
             print(self.message)
             return self.steer_pwm_duty, self.throttle_pwm_duty
