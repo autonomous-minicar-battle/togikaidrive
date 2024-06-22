@@ -47,7 +47,7 @@ class Planner:
             self.flag_back = True
             print(self.message)
         elif max(ultrasonic_Fr.records[:times]) > self.DETECTION_DISTANCE_BACK:
-            self.message = "前進"
+            #self.message = "前進"
             self.flag_back = False  
 
     # 前側１センサーを用いた停止

@@ -87,7 +87,7 @@ config.THROTTLE_FORWARD_PWM = 500
 config.THROTTLE_REVERSE_PWM = 240
 
 ## thonny plotterで値を見るときにTrue
-config.plotter = True
+config.plotter = False
 ## 使わないライブラリOFF
 config.HAVE_CAMERA =False
 config.HAVE_IMU =False
