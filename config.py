@@ -11,11 +11,11 @@ motor_Nrecords = 5
 
 # 復帰モード選択
 mode_recovery = "Back" #None, Back, Stop
-recovery_time = 0.5
+recovery_time = 0.3
 
 # 出力系
 # 判断結果出力、Thonyのplotterを使うならFalse
-print_plan_result = False
+#print_plan_result = False
 # Thonnyのplotterを使う場合
 plotter = False
 
@@ -39,10 +39,10 @@ DETECTION_DISTANCE_Fr = 150
 ### 右左折判定基準距離
 DETECTION_DISTANCE_RL = 150
 ### 他
-#DETECTION_DISTANCE_FrLH = 150
-#DETECTION_DISTANCE_FrRH = 150
-#DETECTION_DISTANCE_RrLH = 150
-#DETECTION_DISTANCE_RrRH = 150
+DETECTION_DISTANCE_FrLH = 150
+DETECTION_DISTANCE_FrRH = 150
+DETECTION_DISTANCE_RrLH = 150
+DETECTION_DISTANCE_RrRH = 150
 DETECTION_DISTANCE_TARGET = 180 #目標距離
 DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
 
