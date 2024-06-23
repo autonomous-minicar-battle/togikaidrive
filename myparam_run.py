@@ -26,7 +26,7 @@ if not __name__ == "__main__":
 
     # 判断モード選択
     ##　選択肢："Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"
-    config.mode_plan = "NN" #"GoStraight"
+    config.mode_plan = "Right_Left_3" #"GoStraight"
 
     # ！！！出前授業用に生徒が変更するバラメータ　ここまで ！！！　#
 
@@ -80,7 +80,7 @@ if not __name__ == "__main__":
     ## アクセルのPWM値(motor.pyで調整した後値を入れる)
     ## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
     config.THROTTLE_STOPPED_PWM = 370 #370-390当たりにニュートラル値がある
-    config.THROTTLE_FORWARD_PWM = 500　
+    config.THROTTLE_FORWARD_PWM = 500
     config.THROTTLE_REVERSE_PWM = 240
 
     ## thonny plotterで値を見るときにTrue
