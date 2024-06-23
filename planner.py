@@ -124,6 +124,30 @@ class Planner:
             print(self.message)
         return self.steer_pwm_duty, self.throttle_pwm_duty
 
+    # 左手法を用いた走行
+    def LeftHand(self, dis_FrLH, dis_RrLH):
+        # 検知時の判断
+        ## 左壁が遠い
+        if dis_FrLH > self.DETECTION_DISTANCE_TARGET + self.DETECTION_DISTANCE_RANGE and dis_RrLH > self.DETECTION_DISTANCE_TARGET + self.DETECTION_DISTANCE_RANGE:
+                self.steer_pwm_duty =config.LEFT
+                self.throttle_pwm_duty = config.FORWARD_C
+                self.message = "左旋回"
+        ## 左壁が近い
+        elif dis_FrLH < self.DETECTION_DISTANCE_TARGET - self.DETECTION_DISTANCE_RANGE or dis_RrLH < self.DETECTION_DISTANCE_TARGET - self.DETECTION_DISTANCE_RANGE:
+            self.steer_pwm_duty =config.RIGHT
+            self.throttle_pwm_duty = config.FORWARD_C
+            self.message = "右旋回"            
+        ## ちょうどよい
+        else: 
+            self.steer_pwm_duty =config.NUTRAL
+            self.throttle_pwm_duty = config.FORWARD_S
+            self.message = "直進中"
+
+        ## モーターへ出力を返す
+        if config.print_plan_result:
+            print(self.message)
+        return self.steer_pwm_duty, self.throttle_pwm_duty
+
 
     # 右手法のPIDを用いた走行
     def RightHand_PID(self, ultrasonic_FrRH, ultrasonic_RrRH,
@@ -150,6 +174,33 @@ class Planner:
             print("output * PID:{:3.1f}, [P:{:3.1f}, I:{:3.1f}, D:{:3.1f}]".format(steer_pwm_duty_pid, self.K_P*delta_dis,self.K_D*v, self.K_I*integral_delta_dis))
         self.steer_pwm_duty, self.throttle_pwm_duty  = self.RightHand(ultrasonic_FrRH.dis, ultrasonic_RrRH.dis)
         return steer_pwm_duty_pid*self.steer_pwm_duty, self.throttle_pwm_duty
+
+    # 左手法のPIDを用いた走行
+    def LeftHand_PID(self, ultrasonic_FrLH, ultrasonic_RrLH,
+        t=0,integral_delta_dis=0,min_dis=config.DETECTION_DISTANCE_TARGET):
+        # 時間更新
+        t_before = t
+        t = time.perf_counter()
+        delta_t = t-t_before
+        # 右手法最小距離更新
+        min_dis_before = min_dis
+        min_dis = min(ultrasonic_FrLH.dis,ultrasonic_RrLH.dis)
+        # 目標値までの差更新
+        delta_dis = min_dis - self.DETECTION_DISTANCE_TARGET
+        # 目標値までの差積分更新
+        integral_delta_dis += delta_dis
+         #速度更新
+        v = (min_dis - min_dis_before)/delta_t
+        # PID制御でステア値更新
+        steer_pwm_duty_pid = self.K_P*delta_dis - self.K_D*v + self.K_I*integral_delta_dis 
+        ### -100~100に収めて正の割合化
+        steer_pwm_duty_pid = abs(max(-100,min(100,steer_pwm_duty_pid))/100)
+        if config.print_plan_result:
+            print(self.message)
+            print("output * PID:{:3.1f}, [P:{:3.1f}, I:{:3.1f}, D:{:3.1f}]".format(steer_pwm_duty_pid, self.K_P*delta_dis,self.K_D*v, self.K_I*integral_delta_dis))
+        self.steer_pwm_duty, self.throttle_pwm_duty  = self.LeftHand(ultrasonic_FrLH.dis, ultrasonic_RrLH.dis)
+        return steer_pwm_duty_pid*self.steer_pwm_duty, self.throttle_pwm_duty
+
 
     # Neural Netを用いた走行
     if config.HAVE_NN:

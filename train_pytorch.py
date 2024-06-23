@@ -56,6 +56,14 @@ def load_data():
     print("データ形式の確認:", "x:", x_tensor.shape, "y:", y_tensor.shape)
     return x_tensor, y_tensor, csv_file
 
+def steering_shifter_t01(y_tensor):
+    y_tensor[0] = (y_tensor[0]+1)/2
+    return y_tensor
+
+def steering_shifter_t0m11(y_tensor):
+    y_tensor[0] = (y_tensor[0]-0.5)*2
+    return y_tensor
+
 # カスタムデータセットクラス
 class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, x_tensor, y_tensor):

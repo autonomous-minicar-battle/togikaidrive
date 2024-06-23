@@ -225,9 +225,15 @@ try:
         ## 右手法で走る
         elif config.mode_plan == "RightHand":
             steer_pwm_duty, throttle_pwm_duty  = plan.RightHand(ultrasonics["FrRH"].dis, ultrasonics["RrRH"].dis)
+        ## 左手法で走る
+        elif config.mode_plan == "LeftHand":
+            steer_pwm_duty, throttle_pwm_duty  = plan.LeftHand(ultrasonics["FrLH"].dis, ultrasonics["RrLH"].dis)
         ## 右手法にPID制御を使ってスムーズに走る
         elif config.mode_plan == "RightHand_PID":
             steer_pwm_duty, throttle_pwm_duty  = plan.RightHand_PID(ultrasonics["FrRH"], ultrasonics["RrRH"])
+        ## 左手法にPID制御を使ってスムーズに走る
+        elif config.mode_plan == "LeftHand_PID":
+            steer_pwm_duty, throttle_pwm_duty  = plan.LeftHand_PID(ultrasonics["FrLH"], ultrasonics["RrLH"])
         ## ニューラルネットを使ってスムーズに走る
         #評価中
         elif config.mode_plan == "NN":
