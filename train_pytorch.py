@@ -51,15 +51,18 @@ def load_data():
     y = df.iloc[:, 1:3]
     x_tensor = torch.tensor(x.values, dtype=torch.float32)
     x_tensor =x_tensor / 2000 # 2000mmを1として正規化
+    y_tensor = steering_shifter_t01(y_tensor) # -1~1を0~1に変換
     y_tensor = torch.tensor(y.values, dtype=torch.float32)
     y_tensor = y_tensor / 100 # 100%を1として正規化
     print("データ形式の確認:", "x:", x_tensor.shape, "y:", y_tensor.shape)
     return x_tensor, y_tensor, csv_file
 
+# -1~1を0~1に変換
 def steering_shifter_t01(y_tensor):
     y_tensor[0] = (y_tensor[0]+1)/2
     return y_tensor
 
+# 0~1を-1~1に変換
 def steering_shifter_t0m11(y_tensor):
     y_tensor[0] = (y_tensor[0]-0.5)*2
     return y_tensor
@@ -112,6 +115,7 @@ class NeuralNetwork(nn.Module):
         with torch.no_grad():
             predictions = model(x_tensor)
             predictions = F.softmax(predictions, dim=1)
+        predictions = steering_shifter_t0m11(predictions) # 0~1を-1~1に変換
         return predictions
 
 # トレーニング関数
