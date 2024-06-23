@@ -51,9 +51,11 @@ def load_data():
     y = df.iloc[:, 1:3]
     x_tensor = torch.tensor(x.values, dtype=torch.float32)
     x_tensor =x_tensor / 2000 # 2000mmを1として正規化
-    y_tensor = steering_shifter_t01(y_tensor) # -1~1を0~1に変換
     y_tensor = torch.tensor(y.values, dtype=torch.float32)
     y_tensor = y_tensor / 100 # 100%を1として正規化
+    print("before:",y_tensor)
+    y_tensor = steering_shifter_t01(y_tensor) # -1~1を0~1に変換
+    print("after:",y_tensor)
     print("データ形式の確認:", "x:", x_tensor.shape, "y:", y_tensor.shape)
     return x_tensor, y_tensor, csv_file
 

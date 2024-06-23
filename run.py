@@ -6,8 +6,6 @@ if not __name__ == "__main__":
     #　myparam_run.pyから起動したときにmyparam_run.pyのconfigを使う
     import myparam_run
     config = myparam_run.config
-    print("True:",config.plotter)
-    sys.exit()
 
 # 一般的な外部ライブラリ
 import os
