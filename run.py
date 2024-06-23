@@ -206,7 +206,7 @@ try:
 
         ## 全体の状態を出力      
         #print("Rec:"+recording, "Mode:",mode,"RunTime:",ts_run ,"Str:",steer_pwm_duty,"Thr:",throttle_pwm_duty,"Uls:", message) #,end=' , '
-        #if mode == 'auto' : mode = config.mode_plan
+        if mode == 'auto' : mode = config.mode_plan
         if config.plotter:
               print(message)
         else: print("Rec:{0}, Mode:{1}, RunTime:{2:>5}, Str:{3:>4}, Thr:{4:>4}, Uls:[ {5}]".format(recording, mode, ts_run, steer_pwm_duty, throttle_pwm_duty, message)) #,end=' , '

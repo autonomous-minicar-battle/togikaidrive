@@ -15,7 +15,7 @@ recovery_time = 0.3
 
 # 出力系
 # 判断結果出力、Thonyのplotterを使うならFalse
-#print_plan_result = False
+print_plan_result = False
 # Thonnyのplotterを使う場合
 plotter = False
 
@@ -128,7 +128,7 @@ hidden_dim = 64 #（隠れ層のノード数）
 num_hidden_layers = 3 #（隠れ層の数）
 
 # コントローラー（ジョイスティックの設定）
-HAVE_CONTROLLER = False #True
+HAVE_CONTROLLER = True #True
 JOYSTICK_STEERING_SCALE = -1.0       #some people want a steering that is less sensitve. This scalar is multiplied with the steering -1 to 1. It can be negative to reverse dir.
 JOYSTICK_THROTTLE_SCALE = -1.0       #some people want a throttle that is less sensitve. 
 #AUTO_RECORD_ON_THROTTLE = False      #if true, we will record whenever throttle is not zero. if false, you must manually toggle recording with some other trigger. Usually circle button on joystick.

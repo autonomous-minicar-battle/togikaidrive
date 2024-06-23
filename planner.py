@@ -43,11 +43,9 @@ class Planner:
         times = 3
         # elifではなく、別のif文として評価
         if max(ultrasonic_Fr.records[:times]) < self.DETECTION_DISTANCE_BACK:
-            self.message = "後退"
             self.flag_back = True
-            print(self.message)
+            print("後退")
         elif max(ultrasonic_Fr.records[:times]) > self.DETECTION_DISTANCE_BACK:
-            #self.message = "前進"
             self.flag_back = False  
 
     # 前側１センサーを用いた停止
@@ -55,9 +53,8 @@ class Planner:
         ## 目前に前壁をtimes回検知
         times = 3
         if max(ultrasonic_Fr.records[0:times-1]) < self.DETECTION_DISTANCE_STOP:
-                self.message = "停止"
                 self.flag_stop = True                
-                print(self.message)
+                print("停止")
 
     # 前側３センサーを用いた右左走行
     def Right_Left_3(self, dis_FrLH, dis_Fr, dis_FrRH):
@@ -169,8 +166,10 @@ class Planner:
         steer_pwm_duty_pid = self.K_P*delta_dis - self.K_D*v + self.K_I*integral_delta_dis 
         ### -100~100に収めて正の割合化
         steer_pwm_duty_pid = abs(max(-100,min(100,steer_pwm_duty_pid))/100)
+
+        ## モーターへ出力を返す
         if config.print_plan_result:
-            print(self.message)
+            #print(self.message)
             print("output * PID:{:3.1f}, [P:{:3.1f}, I:{:3.1f}, D:{:3.1f}]".format(steer_pwm_duty_pid, self.K_P*delta_dis,self.K_D*v, self.K_I*integral_delta_dis))
         self.steer_pwm_duty, self.throttle_pwm_duty  = self.RightHand(ultrasonic_FrRH.dis, ultrasonic_RrRH.dis)
         return steer_pwm_duty_pid*self.steer_pwm_duty, self.throttle_pwm_duty
@@ -195,8 +194,10 @@ class Planner:
         steer_pwm_duty_pid = self.K_P*delta_dis - self.K_D*v + self.K_I*integral_delta_dis 
         ### -100~100に収めて正の割合化
         steer_pwm_duty_pid = abs(max(-100,min(100,steer_pwm_duty_pid))/100)
+
+        ## モーターへ出力を返す
         if config.print_plan_result:
-            print(self.message)
+            #print(self.message)
             print("output * PID:{:3.1f}, [P:{:3.1f}, I:{:3.1f}, D:{:3.1f}]".format(steer_pwm_duty_pid, self.K_P*delta_dis,self.K_D*v, self.K_I*integral_delta_dis))
         self.steer_pwm_duty, self.throttle_pwm_duty  = self.LeftHand(ultrasonic_FrLH.dis, ultrasonic_RrLH.dis)
         return steer_pwm_duty_pid*self.steer_pwm_duty, self.throttle_pwm_duty
@@ -210,5 +211,6 @@ class Planner:
             input = torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0)
             self.steer_pwm_duty = int(model.predict(model, input).squeeze(0)[0] *100)
             self.throttle_pwm_duty = int(model.predict(model, input).squeeze(0)[1] *100)
-            print(self.message)
+
+            ## モーターへ出力を返す
             return self.steer_pwm_duty, self.throttle_pwm_duty
