@@ -93,6 +93,7 @@ if config.HAVE_IMU:
 mode = "auto"
 if config.HAVE_CONTROLLER:
     joystick = joystick.Joystick()
+    mode = "user"
 
 # 一時停止（Enterを押すとプログラム実行開始）
 print('Enterを押して走行開始!')

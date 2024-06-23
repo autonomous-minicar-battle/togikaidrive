@@ -2,6 +2,23 @@
 import datetime
 import os
 
+# 判断モード選択
+model_plan_list = ["GoStraight","Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID","LeftHand","LeftHand_PID","NN"]
+mode_plan = "NN"
+# 判断モード関連パラメータ
+## 過去の操作値記録回数
+motor_Nrecords = 5
+
+# 復帰モード選択
+mode_recovery = "Back" #None, Back, Stop
+recovery_time = 0.5
+
+# 出力系
+# 判断結果出力、Thonyのplotterを使うならFalse
+print_plan_result = False
+# Thonnyのplotterを使う場合
+plotter = False
+
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
 FORWARD_S = 80 #ストレートでの値, joy_accel1
@@ -22,31 +39,36 @@ DETECTION_DISTANCE_Fr = 150
 ### 右左折判定基準距離
 DETECTION_DISTANCE_RL = 150
 ### 他
-DETECTION_DISTANCE_FrLH = 150
-DETECTION_DISTANCE_FrRH = 150
-DETECTION_DISTANCE_RrLH = 150
-DETECTION_DISTANCE_RrRH = 150
+#DETECTION_DISTANCE_FrLH = 150
+#DETECTION_DISTANCE_FrRH = 150
+#DETECTION_DISTANCE_RrLH = 150
+#DETECTION_DISTANCE_RrRH = 150
 DETECTION_DISTANCE_TARGET = 180 #目標距離
 DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
 
-# 判断モード選択
-model_plan_list = ["GoStraight","Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID"]
-mode_plan = "Right_Left_3"
-## 判断結果出力、Thonyのplotterを使うならFalse
-print_plan_result = False
 ## PIDパラメータ(PDまでを推奨)
 K_P = 0.7 #0.7
 K_I = 0.0 #0.0
 K_D = 0.3 #0.3
 
-# 復帰モード選択
-mode_recovery = "Back" #None, Back, Stop
-recovery_time = 0.5
-
-# Thonnyのplotterを使う場合
-plotter = False
-
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
+# 車両調整用パラメータ
+## 操舵のPWM値
+STEERING_CENTER_PWM = 410 #410:newcar, #340~360:oldcar
+STEERING_WIDTH_PWM = 80
+STEERING_RIGHT_PWM = STEERING_CENTER_PWM + STEERING_WIDTH_PWM
+STEERING_LEFT_PWM = STEERING_CENTER_PWM - STEERING_WIDTH_PWM
+### !!!ステアリングを壊さないための上限下限の値設定  
+STEERING_RIGHT_PWM_LIMIT = 550
+STEERING_LEFT_PWM_LIMIT = 250
+
+## アクセルのPWM値(motor.pyで調整した後値を入れる)
+## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
+THROTTLE_STOPPED_PWM = 390 #390:newcar, #370~390:oldcar
+THROTTLE_FORWARD_PWM = 540
+THROTTLE_REVERSE_PWM = 320
+### 設定不要
+THROTTLE_WIDTH_PWM = 80
 
 # 超音波センサの設定
 ## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
@@ -56,7 +78,6 @@ plotter = False
 ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 ### ８つ使う場合ははこちらのコメントアウト外す
 #ultrasonics_list.extend(["BackRH", "Back", "BackLH"])
-
 ### ほかのファイルで使うためリスト接続名
 ultrasonics_list_join = "uls_"+"_".join(ultrasonics_list)
 
@@ -64,7 +85,6 @@ ultrasonics_list_join = "uls_"+"_".join(ultrasonics_list)
 sampling_times = 100
 ## 目標サンプリング周期（何秒に１回）、複数センサ利用の場合は合計値、
 sampling_cycle = 0.05
-
 ## 過去の超音波センサの値記録回数
 ultrasonics_Nrecords = 5
 
@@ -97,37 +117,6 @@ else:
     print("Please set board as 'old' or 'new'.")
 
 N_ultrasonics = len(ultrasonics_list)
-
-# スロットル/ステアリングモーター用 パラメーター
-## 過去の操作値記録回数
-motor_Nrecords = 5
-
-## 操舵のPWM値
-STEERING_CENTER_PWM = 410 #410:newcar, #340~360:oldcar
-STEERING_WIDTH_PWM = 80
-STEERING_RIGHT_PWM = STEERING_CENTER_PWM + STEERING_WIDTH_PWM
-STEERING_LEFT_PWM = STEERING_CENTER_PWM - STEERING_WIDTH_PWM
-### !!!ステアリングを壊さないための上限下限の値設定  
-STEERING_RIGHT_PWM_LIMIT = 550
-STEERING_LEFT_PWM_LIMIT = 250
-
-## アクセルのPWM値(motor.pyで調整した後値を入れる)
-## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
-THROTTLE_STOPPED_PWM = 390 #390:newcar, #370~390:oldcar
-THROTTLE_FORWARD_PWM = 540
-THROTTLE_REVERSE_PWM = 320
-### 設定不要
-THROTTLE_WIDTH_PWM = 80
-
-# 走行記録
-## 測定データ
-records = "records"
-if not os.path.exists(records):
-    # ディレクトリが存在しない場合、ディレクトリを作成する
-    os.makedirs(records)
-    print("make dir as ",records)
-## 記録したcsvファイル名
-record_filename = './'+records+'/record_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
 # NNパラメータ
 HAVE_NN = True
@@ -164,26 +153,14 @@ JOYSTICK_HAT_LR = 0
 JOYSTICK_HAT_DU = 1
 
 # カメラの設定
+HAVE_CAMERA = False
 IMAGE_W = 160
 IMAGE_H = 120
 IMAGE_DEPTH = 3         # default RGB=3, make 1 for mono
-CAMERA_FRAMERATE = 20 #DRIVE_LOOP_HZ
-CAMERA_VFLIP = False
-CAMERA_HFLIP = False
-IMSHOW = False #　画像を表示するか
-
-## 画像
-HAVE_CAMERA = False
-img_size = (120, 160, 3)
-images = "images"
-if not os.path.exists(images):
-    # ディレクトリが存在しない場合、ディレクトリを作成する
-    os.makedirs(images)
-    print("make dir as ",images)
-## 記録するフォルダ名
-image_dir = './'+images+'/image_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-os.makedirs(image_dir)
-print("make dir as ",image_dir)
+#CAMERA_FRAMERATE = 20 #DRIVE_LOOP_HZ
+#CAMERA_VFLIP = False
+#CAMERA_HFLIP = False
+#IMSHOW = False #　画像を表示するか
 
 #↑↑↑ルールベース/機械学習講座向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
 # その他
@@ -195,3 +172,25 @@ mode_dynamic_control = "GCounter" #GVectoring
 ## fpvがONの時は画像保存なし
 fpv = False #True
 port = 8910
+
+# 走行記録
+## 測定データ
+records = "records"
+if not os.path.exists(records):
+    # ディレクトリが存在しない場合、ディレクトリを作成する
+    os.makedirs(records)
+    print("make dir as ",records)
+## 記録したcsvファイル名
+record_filename = './'+records+'/record_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
+
+# 画像保存
+img_size = (IMAGE_W, IMAGE_H, IMAGE_DEPTH)
+images = "images"
+if not os.path.exists(images):
+    # ディレクトリが存在しない場合、ディレクトリを作成する
+    os.makedirs(images)
+    print("make dir as ",images)
+## 記録するフォルダ名
+image_dir = './'+images+'/image_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+os.makedirs(image_dir)
+print("make dir as ",image_dir)
