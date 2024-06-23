@@ -4,7 +4,7 @@ import os
 
 # 判断モード選択
 model_plan_list = ["GoStraight","Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID","LeftHand","LeftHand_PID","NN"]
-mode_plan = "NN"
+mode_plan = "Right_Left_3"
 # 判断モード関連パラメータ
 ## 過去の操作値記録回数
 motor_Nrecords = 5
@@ -52,8 +52,8 @@ K_I = 0.0 #0.0
 K_D = 0.3 #0.3
 
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
-# 車両調整用パラメータ
-## 操舵のPWM値
+# 車両調整用パラメータ(motor.pyで調整した後値を入れる)
+## ステアリングのPWMの値
 STEERING_CENTER_PWM = 410 #410:newcar, #340~360:oldcar
 STEERING_WIDTH_PWM = 80
 STEERING_RIGHT_PWM = STEERING_CENTER_PWM + STEERING_WIDTH_PWM
@@ -62,13 +62,11 @@ STEERING_LEFT_PWM = STEERING_CENTER_PWM - STEERING_WIDTH_PWM
 STEERING_RIGHT_PWM_LIMIT = 550
 STEERING_LEFT_PWM_LIMIT = 250
 
-## アクセルのPWM値(motor.pyで調整した後値を入れる)
+## アクセルのPWM値
 ## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
 THROTTLE_STOPPED_PWM = 390 #390:newcar, #370~390:oldcar
 THROTTLE_FORWARD_PWM = 540
 THROTTLE_REVERSE_PWM = 320
-### 設定不要
-THROTTLE_WIDTH_PWM = 80
 
 # 超音波センサの設定
 ## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
@@ -119,13 +117,15 @@ else:
 N_ultrasonics = len(ultrasonics_list)
 
 # NNパラメータ
-HAVE_NN = True
-model_dir = "models"
-#model_name = "model_20240527_record_20240519_224821.csv.pth"
-model_name = "model_20240622_record_20240622_043413.csv_epoch_100_uls_RrLH_FrLH_Fr_FrRH_RrRH.pth"
-model_path = os.path.join(model_dir, model_name)
-hidden_dim = 64 #（隠れ層のノード数）
-num_hidden_layers = 3 #（隠れ層の数）
+if mode_plan == "NN":
+    HAVE_NN = True
+    model_dir = "models"
+    #model_name = "model_20240527_record_20240519_224821.csv.pth"
+    model_name = "model_20240622_record_20240622_043413.csv_epoch_100_uls_RrLH_FrLH_Fr_FrRH_RrRH.pth"
+    model_path = os.path.join(model_dir, model_name)
+    hidden_dim = 64 #（隠れ層のノード数）
+    num_hidden_layers = 3 #（隠れ層の数）
+    batch_size = 8
 
 # コントローラー（ジョイスティックの設定）
 HAVE_CONTROLLER = True #True
@@ -166,7 +166,7 @@ IMAGE_DEPTH = 3         # default RGB=3, make 1 for mono
 # その他
 # ジャイロを使った動的制御モード選択
 HAVE_IMU = False #True
-mode_dynamic_control = "GCounter" #GVectoring
+mode_dynamic_control = "GCounter" #"GCounter", "GVectoring"
 
 # FPV 下記のport番号
 ## fpvがONの時は画像保存なし

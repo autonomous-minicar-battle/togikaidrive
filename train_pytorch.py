@@ -1,11 +1,13 @@
 import os
 import sys
 import datetime
+print("ライブラリの初期化に数秒かかります...")
 import pandas as pd
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader #, TensorDataset
+import matplotlib.pyplot as plt
 
 import config
 
@@ -43,8 +45,8 @@ def load_data():
         csv_file = csv_files[0]
         csv_path = os.path.join(folder, csv_file)
         df = pd.read_csv(csv_path)
-    print("入力データのヘッダー確認:\n", df.columns)
-    print("データの確認:\n", df.head())
+    print("\n入力データのヘッダー確認:\n", df.columns)
+    print("\nデータの確認:\n", df.head())
 
     #df.iloc[:, 1:] = df.iloc[:, 1:].astype(int)
     x = df.iloc[:, 3:]
@@ -53,20 +55,18 @@ def load_data():
     x_tensor =x_tensor / 2000 # 2000mmを1として正規化
     y_tensor = torch.tensor(y.values, dtype=torch.float32)
     y_tensor = y_tensor / 100 # 100%を1として正規化
-    print("before:",y_tensor)
-    y_tensor = steering_shifter_t01(y_tensor) # -1~1を0~1に変換
-    print("after:",y_tensor)
-    print("データ形式の確認:", "x:", x_tensor.shape, "y:", y_tensor.shape)
+    y_tensor = steering_shifter_to_01(y_tensor) # -1~1を0~1に変換
+    print("\nデータ形式の確認:", "x:", x_tensor.shape, "y:", y_tensor.shape)
     return x_tensor, y_tensor, csv_file
 
 # -1~1を0~1に変換
-def steering_shifter_t01(y_tensor):
-    y_tensor[0] = (y_tensor[0]+1)/2
+def steering_shifter_to_01(y_tensor):
+    y_tensor[:,0] = (y_tensor[:,0]+1)/2
     return y_tensor
 
 # 0~1を-1~1に変換
-def steering_shifter_t0m11(y_tensor):
-    y_tensor[0] = (y_tensor[0]-0.5)*2
+def steering_shifter_to_m11(y_tensor):
+    y_tensor[:,0] = (y_tensor[:,0]-0.5)*2
     return y_tensor
 
 # カスタムデータセットクラス
@@ -116,13 +116,15 @@ class NeuralNetwork(nn.Module):
         model.eval()  # モデルを評価モードに設定
         with torch.no_grad():
             predictions = model(x_tensor)
-            predictions = F.softmax(predictions, dim=1)
-        predictions = steering_shifter_t0m11(predictions) # 0~1を-1~1に変換
+            #predictions = F.softmax(predictions, dim=1)
+        predictions = steering_shifter_to_m11(predictions) # 0~1を-1~1に変換
+        predictions = torch.clamp(predictions, min=-1, max=1)  # Clamp values between -1 and 1
         return predictions
 
 # トレーニング関数
 def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=100):
     model.train()  # モデルをトレーニングモードに設定
+    loss_history = []  # Loss values for plotting
     for epoch in range(start_epoch, start_epoch + epochs):
         for inputs, targets in dataloader:
             optimizer.zero_grad()
@@ -130,8 +132,20 @@ def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=1
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
+        loss_history.append(loss.item())  # Record the loss value
         print(f'Epoch {epoch+1}/{epochs}, Loss: {loss.item()}')
     print("トレーニングが完了しました。")
+    
+    # Plot and save the loss values
+    plt.figure()
+    plt.plot(loss_history, label='Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    loss_history_path = config.model_dir+'/'+'loss_history.png'
+    plt.savefig(loss_history_path)
+    plt.close()
+    print("Lossの履歴を保存しました: "+loss_history_path)
     return epoch+1
     
 
@@ -195,7 +209,7 @@ def main():
     
     # データセットとデータローダーの作成
     dataset = CustomDataset(x_tensor, y_tensor)
-    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=config.batch_size, shuffle=True)
     
     # モデルの作成
     input_dim = x_tensor.shape[1]
@@ -203,7 +217,7 @@ def main():
     model = NeuralNetwork(input_dim, output_dim, config.hidden_dim, config.num_hidden_layers)
     
     # 損失関数と最適化手法の設定
-    criterion = nn.MSELoss()  # 仮定: 回帰タスク
+    criterion = nn.MSELoss()  # Mean Squared Error
     optimizer = torch.optim.Adam(model.parameters())
         
     # モデルの読み込み
@@ -234,13 +248,28 @@ def main():
     load_model(model, model_path, None, model_dir)
     print(model)
  
-    print("\n推論の実行例です。")
-    input_example = x_tensor[:4]
-    predictions = model.predict(model, input_example)
+    print("\n推論の実行例です。ランダムに5つのデータを取り出して予測します。")
+    # dataの取り出し
+    testloader = DataLoader(dataset, batch_size=1, shuffle=True)
+    tmp = testloader.__iter__()
+    x = torch.tensor([])
+    y = torch.tensor([])
+    yh = torch.tensor([])
+    for _ in range(5):
+        x1, y1 = next(tmp) # 1バッチ分のデータを取り出す
+        yh1 = model.predict(model, x1)
+        x = torch.cat([x, x1])
+        y = torch.cat([y, y1])
+        yh = torch.cat([yh, yh1])
+
     print("\n入力データ:")
-    print(input_example)
+    print(x)
+    print("\n正解データ:")
+    print(y)
     print("\n予測結果:")
-    print(predictions)
+    print(yh)
+    print("\n差分:")
+    print(y-yh)
 
 if __name__ == "__main__":
     main()

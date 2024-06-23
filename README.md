@@ -1,4 +1,6 @@
 # togikaidrive
+## ***Mobility for All to Study!***
+
 超音波センサ等で自動運転するミニカーの制御プログラム  
 自動運転ミニカーバトルと出前授業等で活用
 
@@ -7,55 +9,165 @@
 2. ultrasonic.py　超音波測定用プログラム
 3. run.py　走行用プログラム
 4. config.py　パラメータ用プログラム
-5. train.py　機械学習の学習用プログラム
+5. train_pytorch.py　機械学習用プログラム
 
-python run.pyで走行！それぞれのプログラムは単独チェックで活用。
+>TODO:プログラムツリー
+
+python run.pyで走行！  
+
+それぞれのプログラムは単独チェック等で活用  
+なるべく授業活用しやすい、変更しやすいコードを目指す
 
 
 ## 授業
-大枠
-- 体験型授業ではconfigをいじるだけでできることをメインにする
-- Pythonのコードは都度説明
+### 体験型授業
+認知（超音波センサ）→判断（モードの選択/紹介）→操作（モーター出力）の順番で教える。
 
-流れ
-1. 出力調整
-   1. スロットル値をいじろう
-   2. 舵角値をいじろう　
-   ~~~
-   python motor.py
-   ~~~
+1. 超音波センサの値を確認する
+~~~ shell
+python ultrasonic.py
+~~~ 
+   - 体験例
+      - 定規で距離を測り、測定値との比較をする
+      - 超音波センサの測定可能範囲（角度）を手をかざして調べる
+      - 超音波センサの数を変える
+      - サンプリングサイクルを変える
 
-2. 超音波センサで物との距離を測ろう
-   1. 定規で距離を測り、測定値との比較をする
-   2. 超音波センサの測定可能範囲（角度）を手をかざして調べる
-   3. 超音波センサの数を変える
-   4. サンプリングサイクルを変える
-   ~~~
-   python ultrasonic.py
-   ~~~
+>TODO:超音波センサの検知範囲の絵
 
-3. 走行制御
-   1. チキンレース！壁に直前で止まろう（パラスタ）  
-   ➔config.DETECTION_DISTANCE_STOP
-   2. 壁にぶつかったらバックしてみよう（追加制御）  
-   ➔バック関数を作成
-   3. PID制御で舵角値をいい感じにしよう（制御の改善）  
-   ➔config.K_P/.K_I/.K_D
-   4. MLを試そう（ルールベースの代替）  
-   ➔config.mode_planとconfigのNN各種パラメータ
+<br>
 
-4. 分析
-   1. 超音波センサの値を確認しよう（実測値のバラツキ、不具合）    
-   ➔recordsのフォルダ
+2. モード選択
+ここでは、モードの詳解とお手本で動きをみせるだけ。  
+config.pyを変更して保存。
+~~~ python
+# 判断モード選択
+model_plan_list = ["GoStraight","Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID","LeftHand","LeftHand_PID","NN"]
+mode_plan = "Right_Left_3"
+~~~
+
+<br>
+
+3. 出力調整  
+数値を入れてEnterを押していく。
+~~~
+python motor.py
+~~~
+- ステアリングのPWMの値を探す
+   - 真ん中、左最大、右最大
+- アクセルのPWMの値を探す
+   - ニュートラル（モータードライバーがピッピッピとなる）,
+   前進の最大値、後進進の最大値
+- config.pyにその値を保存する
+~~~
+## ステアのPWM値
+例
+## ステアのPWM値
+STEERING_CENTER_PWM = 370
+STEERING_WIDTH_PWM = 80
+STEERING_RIGHT_PWM = STEERING_CENTER_PWM + STEERING_WIDTH_PWM
+STEERING_LEFT_PWM = STEERING_CENTER_PWM - STEERING_WIDTH_PWM
+
+## アクセルのPWM値(motor.pyで調整した後値を入れる)
+## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
+THROTTLE_STOPPED_PWM = 370
+THROTTLE_FORWARD_PWM = 500
+THROTTLE_REVERSE_PWM = 300
+~~~
+
+#### 簡単な走行制御
+1. チキンレース！壁に直前で止まろう（パラスタ）  
+
+config.pyを変更して保存。
+~~~ python
+# 復帰モード選択
+mode_recovery = "Stop"
+recovery_time = 0.3
+# モーター出力パラメータ （デューティー比：-100~100で設定）
+# スロットル用
+FORWARD_S = 80 #ストレートでの値, joy_accel1
+FORWARD_C = 60 #カーブでのの値, joy_accel2
+REVERSE = -50 
+~~~
+
+
+2. PID制御で舵角値をいい感じにしよう（制御の改善）  
+
+config.pyを変更して保存。
+
+~~~ python
+mode_plan = "RightHand_PID"
+#mode_plan = "LeftHand_PID"
+
+## PIDパラメータ(PDまでを推奨)
+K_P = 0.7 #0.7
+K_I = 0.0 #0.0
+K_D = 0.3 #0.3
+~~~
+
+3. MLを試そう（ルールベースの代替）  
+
+config.py
+~~~ python
+# 判断モード選択
+mode_plan = "NN"
+~~~
+
+train_pytorch.pyで学習
+~~~ shell
+python train_pytorch.py
+~~~
+
+4. 壁にぶつかったらバックしてみよう（制御の追加変更）  
+planner.pyとrun.pyを各自変更。
+
+
+#### 走行実習
+myparam_run.py内のパラメータを変更し、パラメータの変更による走行の変化を体験する
+##### コース：愛知県コース
+ 
+>TODO: 愛知県コースの絵
+
+### 分析実習
+   1. 超音波センサの値を確認しよう（実測値のバラツキ）    
+   ➔recordsのフォルダとconfigの値変更し、マシンのラズパイ上plotterで確認。
+
    2. 走行記録を視覚化してみよう（グラフ、画像、動画）  
-   ➔imagesのフォルダ
-   3. fpvで操作してみよう  
-   ➔fpv.py
-5. 発展
-   1. IMU（加速度、ジャイロ、地磁気センサ）を使ってみよう  
-   ➔gyro.py
-   2. 画像処理やディープラーニングで走る
+   ~~~
+   python graph.py
+   ~~~
+   ![alt text](assets/car_onemake/images/record_20240622_040833.png)
+
+
+### 発展
+   1. fpvで操作してみよう  
+
+   config.の値を変更。ローカルネットに接続
+   ~~~ python
+   # FPV 下記のport番号
+   ## fpvがONの時は画像保存なし
+   fpv = False #True
+   port = 8910
+   ~~~
+
+   2. IMU（加速度、ジャイロ、地磁気センサ）を使ってみよう  
+   gyroセンサーを追加し、値を計測してみる。
+   ~~~ python
+   python gyro.py
+   ~~~
+   config.の値を変更。   
+   ~~~ python
+   # ジャイロを使った動的制御モード選択
+   HAVE_IMU = False #True
+   mode_dynamic_control = "GCounter" #"GCounter", "GVectoring"
+   ~~~
+
+<br>
+
+   3. 画像処理やディープラーニングで走る
    ＊工事中
+
+<br>
 
 ## ハードウェア
 ### 制限部門貸し出しマシン
@@ -161,6 +273,13 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       '0.8.0a0+45f960c'
       >>> exit()      
       ~~~
+
+   4. [matplot](https://pypi.org/project/matplotlib/)
+      グラフ作成用ライブラリ
+      ~~~
+      pip install matplotlib
+      ~~~
+
    4. [Adafruit_PCA9685](https://github.com/adafruit/Adafruit_Python_PCA9685)
       モーターを動かすのに使います。  
       ~~~
