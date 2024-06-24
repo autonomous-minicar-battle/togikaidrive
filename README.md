@@ -10,13 +10,16 @@ python run.pyで走行！
 
 | プログラム名 | 説明 |
 | ------------ | ---- |
-| motor.py | 操舵・モーター出力/調整用プログラム |
-| ultrasonic.py | 超音波測定用プログラム |
-| run.py | 走行用プログラム |
+| run.py | 走行時のループ処理をするメインプログラム |
 | config.py | パラメータ用プログラム |
+| ultrasonic.py | 超音波測定用プログラム |
+| planner.py | 走行ロジック用プログラム |
+| motor.py | 操舵・モーター出力/調整用プログラム |
 | train_pytorch.py | 機械学習用プログラム |
 
 >TODO:プログラムツリー
+
+![alt text](image-1.png)
 
 > [!NOTE]
 > それぞれのプログラムは単独チェック等で活用  
@@ -222,14 +225,48 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 donkeypi➔togikaixx
 ~~~
 
+4. デスクトップ環境のインストール（お好みで）
+- guiのインストール
 
+~~~shell
+sudo apt install -y xserver-xorg raspberrypi-ui-mods
+raspi-config
+~~~
+「1.System Options」>>「S5 Boot / Auto Login」>>「B4 Desktop Autologin」で設定。
+
+- ブラウザのインストール
+
+~~~shell
+sudo apt install firefox-esr
+~~~
+
+- 日本語入力環境のインストール
+~~~shell
+$ sudo apt purge fcitx fcitx-mozc
+$ sudo apt autopurge
+$ sudo apt update
+$ sudo apt install ibus-mozc -y
+~~~
+
+- Thonny（エディター）のインストール
+~~~
+$ sudo apt install thonny
+~~~
+
+VScodeはラズパイから直接使うには重かった...
+
+*イメージの書き出し
+[参考](https://zenn.dev/takeyan/books/e2c68f8be4ba54/viewer/4d3b53)
 
 
 ##### 選択肢２：まっさらなOSからインストール
 1. 利用するOSは[2021-01-11-raspios-buster-i386.iso](https://downloads.raspberrypi.com/rpd_x86/images/rpd_x86-2021-01-12/2021-01-11-raspios-buster-i386.iso)  
 donkeycar 4.4.0を利用し約するため、busterを採用。
 
-2. Raspberry [Pi Imager](https://www.raspberrypi.com/software/)を使ってSDカードへ書き込み
+2. Win32diskimagerを使って書き込み。
+https://sourceforge.net/projects/win32diskimager/
+
+   または、Raspberry [Pi Imager](https://www.raspberrypi.com/software/)を使ってSDカードへ書き込み
 
 3. [togikaidrive](https://github.com/autonomous-minicar-battle/togikaidrive.git)をgit cloneする
    ~~~
@@ -385,9 +422,6 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       donkey
       ~~~
       
-
-
-   
 
 ## ツール類
    - エディター：[VS Code](https://code.visualstudio.com/) 
