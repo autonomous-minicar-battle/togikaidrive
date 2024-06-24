@@ -4,6 +4,7 @@
 
 超音波センサ等で自動運転するミニカーの制御プログラム  
 自動運転ミニカーバトルと出前授業等で活用
+>TODO:ミニカーの絵（一番かっこいいやつ
 
 ## 主なプログラム概要
 python run.pyで走行！  
@@ -140,12 +141,16 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 ### 分析実習
    1. 超音波センサの値を確認しよう（実測値のバラツキ）    
    ➔recordsのフォルダとconfigの値変更し、マシンのラズパイ上plotterで確認。
+   >TODO:プロッターの絵
+
 
    2. 走行記録を視覚化してみよう（グラフ、画像、動画）  
    ~~~
    python graph.py
    ~~~
    ![alt text](assets/car_onemake/images/record_20240622_040833.png)
+
+   >TODO:グラフの軸修正
 
 
 ### 発展
@@ -182,7 +187,7 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 ### 制限部門貸し出しマシン
 ![制限部門のマシン](/assets/car_onemake/car_seigenbumon.png)
 
-#### BOM
+#### BOM（部品表）
 | 分類 | 名称 | 個数 | 概算コスト(円) | 説明 |
 | ---- | ---- | ---- | ---- | ---- |
 | コンピュータ | [ラズパイ3B+](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/) |1| ---- |　販売終了
@@ -427,6 +432,11 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
    - エディター：[VS Code](https://code.visualstudio.com/) 
       - [GitHub Copilot](https://github.com/github/copilot-preview) AIによるコード補完機能で、プログラミング作業を効率化する拡張機能。
       - [SFTP](https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp)ファイル転送用拡張機能。[参考](https://note.com/_nakashimmer_/n/nd10a5acc6f43)
+      - Remote - SSH リモートホスト（マシン等）にVScodeからアクセス可能
+      - Japanese Language Pack for VS Code 日本語表示
+      - Jupyter Jupyterの実行環境
+      - Markdown Emoji 絵文字をマークダウンで表示
+      - Rainbow CSV カラフルなCSV表示
 
 - コード管理：[Git](https://git-scm.com/) 
 - コード配布：[GitHub](https://github.com/) 
