@@ -67,6 +67,7 @@ STEERING_LEFT_PWM_LIMIT = 250
 THROTTLE_STOPPED_PWM = 390 #390:newcar, #370~390:oldcar
 THROTTLE_FORWARD_PWM = 540
 THROTTLE_REVERSE_PWM = 320
+THROTTLE_WIDTH_PWM = 100 
 
 # 超音波センサの設定
 ## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
@@ -117,6 +118,7 @@ else:
 N_ultrasonics = len(ultrasonics_list)
 
 # NNパラメータ
+HAVE_NN = False
 if mode_plan == "NN":
     HAVE_NN = True
     model_dir = "models"

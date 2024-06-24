@@ -6,25 +6,30 @@
 自動運転ミニカーバトルと出前授業等で活用
 
 ## 主なプログラム概要
-1. motor.py　操舵・モーター出力/調整用プログラム
-2. ultrasonic.py　超音波測定用プログラム
-3. run.py　走行用プログラム
-4. config.py　パラメータ用プログラム
-5. train_pytorch.py　機械学習用プログラム
+python run.pyで走行！  
+
+| プログラム名 | 説明 |
+| ------------ | ---- |
+| motor.py | 操舵・モーター出力/調整用プログラム |
+| ultrasonic.py | 超音波測定用プログラム |
+| run.py | 走行用プログラム |
+| config.py | パラメータ用プログラム |
+| train_pytorch.py | 機械学習用プログラム |
 
 >TODO:プログラムツリー
 
-python run.pyで走行！  
-
-それぞれのプログラムは単独チェック等で活用  
-なるべく授業活用しやすい、変更しやすいコードを目指す
+> [!NOTE]
+> それぞれのプログラムは単独チェック等で活用  
+> なるべく授業活用しやすい、変更しやすいコードを目指す
 
 
 ## 体験型授業
 ### 概要
-認知（超音波センサ）→判断（モードの選択/紹介）→操作（モーター出力）の順番で教える。  説明で退屈しないように体験を上手く活用する。
+> [!NOTE]
+> 認知（超音波センサ）→判断（モードの選択/紹介）→操作（モーター出力）の順番で教える。  
+> 説明で退屈しないように体験を上手く活用する。
 
-1. 超音波センサの値を確認する
+#### 1. 超音波センサの値を確認する
 ~~~ shell
 python ultrasonic.py
 ~~~ 
@@ -38,7 +43,7 @@ python ultrasonic.py
 
 <br>
 
-2. モード選択
+#### 2. モード選択
 ここでは、モードの詳解とお手本で動きをみせるだけ。  
 config.pyを変更して保存。
 ~~~ python
@@ -49,7 +54,7 @@ mode_plan = "Right_Left_3"
 
 <br>
 
-3. 出力調整  
+#### 3. 出力調整  
 数値を入れてEnterを押していく。
 ~~~
 python motor.py
@@ -77,7 +82,7 @@ THROTTLE_REVERSE_PWM = 300
 ~~~
 
 ### 簡単な走行制御
-1. チキンレース！壁に直前で止まろう（パラスタ）  
+#### 1. チキンレース！壁に直前で止まろう（パラスタ）  
 
 config.pyを変更して保存。
 ~~~ python
@@ -92,7 +97,7 @@ REVERSE = -50
 ~~~
 
 
-2. PID制御で舵角値をいい感じにしよう（制御の改善）  
+#### 2. PID制御で舵角値をいい感じにしよう（制御の改善）  
 
 config.pyを変更して保存。
 
@@ -106,21 +111,21 @@ K_I = 0.0 #0.0
 K_D = 0.3 #0.3
 ~~~
 
-3. MLを試そう（ルールベースの代替）  
+#### 3. ニューラルネットワークでルールを学習しよう（ルールベースの代替）  
 
-config.py
+- config.py内下記修正
 ~~~ python
 # 判断モード選択
 mode_plan = "NN"
 ~~~
 
-train_pytorch.pyで学習
+- train_pytorch.pyで学習
 ~~~ shell
 python train_pytorch.py
 ~~~
 
-4. 壁にぶつかったらバックしてみよう（制御の追加変更）  
-planner.pyとrun.pyを各自変更。
+#### 4. 壁にぶつかったらバックしてみよう（制御の追加変更）  
+planner.pyとrun.pyを各自変更
 
 
 ### 走行実習
@@ -141,7 +146,7 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 
 
 ### 発展
-   1. fpvで操作してみよう  
+#### 1. fpvで操作してみよう  
 
    config.の値を変更。ローカルネットに接続
    ~~~ python
@@ -151,7 +156,7 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
    port = 8910
    ~~~
 
-   2. IMU（加速度、ジャイロ、地磁気センサ）を使ってみよう  
+#### 2. IMU（加速度、ジャイロ、地磁気センサ）を使ってみよう  
    gyroセンサーを追加し、値を計測してみる。
    ~~~ python
    python gyro.py
@@ -165,7 +170,7 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 
 <br>
 
-   3. 画像処理やディープラーニングで走る
+#### 3. 画像処理やディープラーニングで走る
    ＊工事中
 
 <br>
@@ -203,6 +208,24 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 #### 組み立てマニュアル
 ＊工事中
 #### 環境構築
+##### 選択肢１：Faboさんのイメージをベースに環境構築
+下記を実施したイメージは[こちら]()
+
+1. [リンク](https://drive.google.com/file/d/1uiUkqMNAAhONLD7ZHmhPery9QN9qlK32/view?usp=sharing)先をダウンロードしイメージをSDカードに焼く。
+詳細は[参照](https://faboplatform.github.io/DonkeyDocs/7.SD%E3%82%AB%E3%83%BC%E3%83%89%E4%BD%9C%E6%88%90/01.os_install/)
+2. [ライブラリ類](######ライブラリ類)をインストール
+
+3. hostnameの変更
+
+/etc/hostsと/etc/hostnameをそれぞれ下記に変更し、マシン配布時にはtogikaiの後に番号xxを付ける
+~~~
+donkeypi➔togikaixx
+~~~
+
+
+
+
+##### 選択肢２：まっさらなOSからインストール
 1. 利用するOSは[2021-01-11-raspios-buster-i386.iso](https://downloads.raspberrypi.com/rpd_x86/images/rpd_x86-2021-01-12/2021-01-11-raspios-buster-i386.iso)  
 donkeycar 4.4.0を利用し約するため、busterを採用。
 
@@ -241,7 +264,7 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
    - [最新のRaspiOSでRealVNCが使えない問題の解決方法](https://qiita.com/konchi_konnection/items/c8e2258f0a7efb49302f)
    
 
-7. ライブラリ類
+###### ライブラリ類
    1. [OpenCV](https://opencv.org/)
       ~~~ 
       sudo apt install python3-opencv
@@ -251,7 +274,8 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       pip install Flask
       ~~~ 
    3. [Pytorch](https://pytorch.org/)
-      ビルドからやると大変（でした）なので、先人のをありがたく使います。  
+      ビルドからやると大変（でした）なので、先人のをありがたく使います。NNの講座をやるときに必要です。
+
       参考：https://zenn.dev/kotaproj/articles/c10c5cb3a03c52
       ~~~ 
       sudo apt update
@@ -259,10 +283,12 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       sudo apt install libopenblas-dev libblas-dev m4 cmake cython python3-dev python3-yaml python3-setuptools
       sudo apt install libatlas-base-dev
       git clone https://github.com/Kashu7100/pytorch-armv7l.git
-      cd pytorch-armv7l/
+      cd pytorch-armv7l-main
       pip install torch-1.7.0a0-cp37-cp37m-linux_armv7l.whl
       pip install torchvision-0.8.0a0+45f960c-cp37-cp37m-linux_armv7l.whl
       ~~~
+      git clone出来ないことがあるがその場合は直接[ダウンロード](https://github.com/Kashu7100/pytorch-armv7l/archive/refs/heads/main.zip)してから、pip installを実施する。
+
       エラーがないことを確認
       ~~~
       $ python
@@ -286,8 +312,9 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       ~~~
       pip install Adafruit_PCA9685
       ~~~
-   5. pygame コントローラーを使うときに使います。
+   5. [pygame](https://pypi.org/project/pygame/) コントローラーを使うときに使います。
       ~~~
+      sudo apt install lightdm libsdl2-2.0-0 
       pip install pygame
       ~~~
    
@@ -318,12 +345,46 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       python BNO055.py
       ~~~
 
-      - oledディスプレイの設定
-         - rc.localがある場合  
-         https://github.com/FaBoPlatform/ip_address_display
-         - rc.localがない場合
-      https://qiita.com/karaage0703/items/ed18f318a1775b28eab4#systemd-%E3%82%92%E4%BD%BF%E3%81%86%E6%96%B9%E6%B3%95
+   6. oledディスプレイの設定
+      - rc.localがある場合  
+      https://github.com/FaBoPlatform/ip_address_display
+      - rc.localがない場合
+   https://qiita.com/karaage0703/items/ed18f318a1775b28eab4#systemd-%E3%82%92%E4%BD%BF%E3%81%86%E6%96%B9%E6%B3%95
 
+   7. donkeycar(ver. 4.4.0)をインストール
+   [公式ドキュメント](https://docs.donkeycar.com/guide/robot_sbc/setup_raspberry_pi/)　
+
+      1. 依存環境セットアップ
+      ~~~
+      sudo apt-get install build-essential python3 python3-dev python3-pip python3-virtualenv python3-numpy python3-picamera python3-pandas python3-rpi.gpio i2c-tools avahi-utils joystick libopenjp2-7-dev libtiff5-dev gfortran libatlas-base-dev libopenblas-dev libhdf5-serial-dev libgeos-dev git ntp
+      ~~~
+
+      2. 仮想環境セットアップ
+      ~~~
+      python3 -m virtualenv -p python3 env --system-site-packages
+      echo "source ~/env/bin/activate" >> ~/.bashrc
+      source ~/.bashrc
+      ~~~
+
+      3. プロジェクトをまとめるフォルダ作成し、移動 
+      ~~~
+      mkdir projects
+      cd projects
+      ~~~
+      4. gitでdonkeycarプロジェクトを取ってくる
+      ~~~
+      git clone https://github.com/autorope/donkeycar
+      cd donkeycar
+      git fetch --all --tags -f
+      git checkout 4.4.0
+      pip install -e .[pi]
+      pip install https://github.com/lhelontra/tensorflow-on-arm/releases/download/v2.2.0/tensorflow-2.2.0-cp37-none-linux_armv7l.whl      
+      ~~~
+      5. コマンドを打って確認、エラーが出なければOK
+      ~~~
+      donkey
+      ~~~
+      
 
 
    
