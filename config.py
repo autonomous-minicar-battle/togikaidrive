@@ -3,7 +3,10 @@ import datetime
 import os
 
 # 判断モード選択
-model_plan_list = ["GoStraight","Right_Left_3","Right_Left_3_Records","RightHand","RightHand_PID","LeftHand","LeftHand_PID","NN"]
+model_plan_list = ["GoStraight",
+                   "Right_Left_3","Right_Left_3_Records",
+                   "RightHand","RightHand_PID","LeftHand","LeftHand_PID",
+                   "NN"]
 mode_plan = "Right_Left_3"
 # 判断モード関連パラメータ
 ## 過去の操作値記録回数
