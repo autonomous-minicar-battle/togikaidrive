@@ -5,7 +5,7 @@
 超音波センサ等で自動運転するミニカーの制御プログラム  
 自動運転ミニカーバトルと出前授業等で活用
 
-![alt text](assets/images/minicar2021_blue_back.png)
+![alt text](assets/images/minicar2021_blue_back_30p.png)
 
 ## 主なプログラム概要
 python run.pyで走行！  
