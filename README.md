@@ -2,8 +2,8 @@
 ## ***Mobility for All to Study!***
 
 
-超音波センサ等で自動運転するミニカーの制御プログラム  
-自動運転ミニカーバトルと出前授業等で活用
+超音波センサ等で自動運転するミニカーの制御プログラム。  
+自動運転ミニカーバトルと出前授業等で活用。
 
 ![alt text](assets/images/minicar2021_blue_back_30p.png)
 
@@ -19,13 +19,11 @@ python run.pyで走行！
 | motor.py | 操舵・モーター出力/調整用プログラム |
 | train_pytorch.py | 機械学習用プログラム |
 
->TODO:プログラムツリー
-
 ![alt text](image-1.png)
 
 > [!NOTE]
-> それぞれのプログラムは単独チェック等で活用  
-> なるべく授業活用しやすい、変更しやすいコードを目指す
+> それぞれのプログラムは単独チェック等で活用  。
+> なるべく授業活用しやすい、変更しやすいコードを目指す。
 
 
 ## 体験型授業
@@ -49,7 +47,9 @@ python ultrasonic.py
 <br>
 
 #### 2. モード選択
-ここでは、モードの詳解とお手本で動きをみせるだけ。  
+> [!NOTE]
+> ここでは、モードの詳解とお手本で動きをみせるだけ。  
+
 config.pyを変更して保存。
 ~~~ python
 # 判断モード選択
@@ -60,16 +60,16 @@ mode_plan = "Right_Left_3"
 <br>
 
 #### 3. 出力調整  
-数値を入れてEnterを押していく。
+PWMの数値を入れてEnterを押していく。
 ~~~
 python motor.py
 ~~~
-- ステアリングのPWMの値を探す
+- ステアリングのPWMの値を探す。
    - 真ん中、左最大、右最大
-- アクセルのPWMの値を探す
+- アクセルのPWMの値を探す。
    - ニュートラル（モータードライバーがピッピッピとなる）,
    前進の最大値、後進進の最大値
-- config.pyにその値を保存する
+- config.pyにその値を保存する。
 ~~~
 ## ステアのPWM値
 例
@@ -186,7 +186,8 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 
 ## ハードウェア
 ### 制限部門貸し出しマシン
-![制限部門のマシン](/assets/car_onemake/car_seigenbumon.png)
+![制限部門のマシン](assets/images/car_seigenbumon.png)
+
 
 #### BOM（部品表）
 | 分類 | 名称 | 個数 | 概算コスト(円) | 説明 |
@@ -217,7 +218,7 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 #### 組み立てマニュアル
 ＊工事中
 #### 環境構築
-##### 選択肢１：Faboさんのイメージをベースに環境構築
+##### 選択肢１：既存のイメージをベースに環境構築
 下記を実施したイメージは[こちら]()
 
 1. [リンク](https://drive.google.com/file/d/1uiUkqMNAAhONLD7ZHmhPery9QN9qlK32/view?usp=sharing)先をダウンロードしイメージをSDカードに焼く。
@@ -432,7 +433,7 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       ~~~
       
 
-## ツール類
+## その他ツール類（開発ツール講座で一部紹介予定）
 - エディター：[VS Code](https://code.visualstudio.com/) 
 - コード管理：[Git](https://git-scm.com/) 
 - コード配布：[GitHub](https://github.com/) 
