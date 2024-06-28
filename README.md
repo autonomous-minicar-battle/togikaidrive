@@ -4,7 +4,8 @@
 
 超音波センサ等で自動運転するミニカーの制御プログラム  
 自動運転ミニカーバトルと出前授業等で活用
->TODO:ミニカーの絵（一番かっこいいやつ
+
+![alt text](assets/images/minicar2021_blue_back.png)
 
 ## 主なプログラム概要
 python run.pyで走行！  
@@ -148,7 +149,7 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
    ~~~
    python graph.py
    ~~~
-   ![alt text](assets/car_onemake/images/record_20240622_040833.png)
+   ![alt text](assets/images/record_20240622_040833.png)
 
    >TODO:グラフの軸修正
 
@@ -260,13 +261,10 @@ $ sudo apt install thonny
 
 VScodeはラズパイから直接使うには重かった...
 
-*イメージの書き出し
-[参考](https://zenn.dev/takeyan/books/e2c68f8be4ba54/viewer/4d3b53)
-
 
 ##### 選択肢２：まっさらなOSからインストール
 1. 利用するOSは[2021-01-11-raspios-buster-i386.iso](https://downloads.raspberrypi.com/rpd_x86/images/rpd_x86-2021-01-12/2021-01-11-raspios-buster-i386.iso)  
-donkeycar 4.4.0を利用し約するため、busterを採用。
+donkeycar 4.4.0を利用しやくするため、busterを採用。
 
 2. Win32diskimagerを使って書き込み。
 https://sourceforge.net/projects/win32diskimager/
@@ -304,6 +302,12 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
 
    3. その他
    - [最新のRaspiOSでRealVNCが使えない問題の解決方法](https://qiita.com/konchi_konnection/items/c8e2258f0a7efb49302f)
+   - イメージの書き出し
+   [参考](https://zenn.dev/takeyan/books/e2c68f8be4ba54/viewer/4d3b53)
+   >[!NOTE]
+   > ラズパイはSDの容量で自動拡張しないため、[Pishrink](https://github.com/Drewsif/PiShrink?fbclid=IwZXh0bgNhZW0CMTAAAR22pQNfbRI-CtGIEqEvlA_xV1-r6faoMIvvau9yBdL2gAle7n3uh6A0DTM_aem_KjcRhs5-_aCddZyr-lsXrw)を用いて圧縮する
+
+
    
 
 ###### ライブラリ類
@@ -429,15 +433,7 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       
 
 ## ツール類
-   - エディター：[VS Code](https://code.visualstudio.com/) 
-      - [GitHub Copilot](https://github.com/github/copilot-preview) AIによるコード補完機能で、プログラミング作業を効率化する拡張機能。
-      - [SFTP](https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp)ファイル転送用拡張機能。[参考](https://note.com/_nakashimmer_/n/nd10a5acc6f43)
-      - Remote - SSH リモートホスト（マシン等）にVScodeからアクセス可能
-      - Japanese Language Pack for VS Code 日本語表示
-      - Jupyter Jupyterの実行環境
-      - Markdown Emoji 絵文字をマークダウンで表示
-      - Rainbow CSV カラフルなCSV表示
-
+- エディター：[VS Code](https://code.visualstudio.com/) 
 - コード管理：[Git](https://git-scm.com/) 
 - コード配布：[GitHub](https://github.com/) 
- - GUIでファイル転送：[Filezilla](https://filezilla-project.org/)
+- GUIでファイル転送：[Filezilla](https://filezilla-project.org/)
