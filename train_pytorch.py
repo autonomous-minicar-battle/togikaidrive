@@ -21,7 +21,7 @@ def load_data():
     print(csv_files)
 
     if len(csv_files) > 1:
-        answer = input("複数のcsvファイルがあります。ファイルを結合しますか？ (y)")
+        answer = input("\n複数のcsvファイルがあります。ファイルを結合しますか？ (y)")
         if answer == "y":
             dataframes = []
             dataframe_colums = []
@@ -45,10 +45,8 @@ def load_data():
         csv_file = csv_files[0]
         csv_path = os.path.join(folder, csv_file)
         df = pd.read_csv(csv_path)
-    print("\n入力データのヘッダー確認:\n", df.columns)
-    print("\nデータの確認:\n", df.head())
-
-    #df.iloc[:, 1:] = df.iloc[:, 1:].astype(int)
+    #print("\n入力データのヘッダー確認:\n", df.columns)
+    print("\n入力データの確認:\n", df.head(3), "\nデータサイズ",df.shape)
     x = df.iloc[:, 3:]
     y = df.iloc[:, 1:3]
     x_tensor = torch.tensor(x.values, dtype=torch.float32)
@@ -58,7 +56,8 @@ def load_data():
     y_tensor[:, 0] = steering_shifter_to_01(y_tensor[:, 0])  # ステアリングの値を-1~1を0~1に変換
     
     #y_tensor = steering_shifter_to_01(y_tensor) # -1~1を0~1に変換
-    print("\nデータ形式の確認:", "x:", x_tensor.shape, "y:", y_tensor.shape)
+    print("\n学習データの確認:\n教師データ(正規化操作値+0.5, Str, Thr):", y_tensor[0,:], "\n入力データ(正規化センサ値)", x_tensor[0,:])
+    print("学習データサイズ:", "y:", y_tensor.shape, "x:", x_tensor.shape, "\n")
     return x_tensor, y_tensor, csv_file
 
 def normalize_ultrasonics(x_tensor, scale=2000):
@@ -131,14 +130,14 @@ class NeuralNetwork(nn.Module):
 
     # 推論関数
     def predict(self, model, x_tensor):
-        x_tensor = normalize_ultrasonics(x_tensor)
+        #x_tensor = normalize_ultrasonics(x_tensor)
         model.eval()  # モデルを評価モードに設定
         with torch.no_grad():
             predictions = model(x_tensor)
             #predictions = F.softmax(predictions, dim=1)
         predictions[:,0] = steering_shifter_to_m11(predictions[:,0]) # 0~1を-1~1に変換
         predictions = torch.clamp(predictions, min=-1, max=1)  # Clamp values between -1 and 1
-        predictions = denormalize_motor(predictions)
+        #predictions = denormalize_motor(predictions)
         return predictions
 
 # トレーニング関数
@@ -181,7 +180,7 @@ def save_model(model, optimizer, folder, csv_file, epoch):
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict()
     }, model_path)
-    print(f"モデルを保存しました: {model_path}")
+    print(f"モデルを保存しました: {model_name}")
     return model_path
 
 
@@ -247,8 +246,8 @@ def main():
     if continue_training:
         start_epoch = load_model(model, None, optimizer, 'models')
     else: start_epoch =0
-    try: epochs = int(input("学習するエポック数を入力してください.(デフォルト:100): ").strip())
-    except ValueError: epochs = 100
+    try: epochs = int(input("学習するエポック数を入力してください.(デフォルト:30): ").strip())
+    except ValueError: epochs = 30
     
     # モデルのトレーニング
     epoch = train_model(model, dataloader, criterion, optimizer, start_epoch=start_epoch, epochs=epochs)
@@ -290,6 +289,7 @@ def main():
     print(yh)
     print("\n差分:")
     print(y-yh)
+    print("\n使用したモデル：",os.path.split(model_path)[-1])
 
 if __name__ == "__main__":
     main()

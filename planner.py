@@ -2,7 +2,9 @@
 import numpy as np
 import config
 import time
-if config.HAVE_NN: import torch
+if config.HAVE_NN: 
+    import torch
+    from train_pytorch import denormalize_motor, normalize_ultrasonics 
 
 class Planner:
     def __init__(self, name):
@@ -207,8 +209,8 @@ class Planner:
         # train_pytorch.py内で正規化処理を行っているため、ここでは正規化処理を行わない
         def NN(self, model, *args):
             ultrasonic_values = args
-            input = torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0)
-            output = model.predict(model, input).squeeze(0)
+            input = normalize_ultrasonics(torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0))
+            output = denormalize_motor(model.predict(model, input).squeeze(0))
             self.steer_pwm_duty = int(output[0])
             self.throttle_pwm_duty = int(output[1])
 
