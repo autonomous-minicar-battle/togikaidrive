@@ -204,11 +204,13 @@ class Planner:
 
     # Neural Netを用いた走行
     if config.HAVE_NN:
+        # train_pytorch.py内で正規化処理を行っているため、ここでは正規化処理を行わない
         def NN(self, model, *args):
             ultrasonic_values = args
             input = torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0)
-            self.steer_pwm_duty = int(model.predict(model, input).squeeze(0)[0] *100)
-            self.throttle_pwm_duty = int(model.predict(model, input).squeeze(0)[1] *100)
+            output = model.predict(model, input).squeeze(0)
+            self.steer_pwm_duty = int(output[0])
+            self.throttle_pwm_duty = int(output[1])
 
             ## モーターへ出力を返す
             return self.steer_pwm_duty, self.throttle_pwm_duty
