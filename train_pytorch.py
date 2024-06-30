@@ -52,10 +52,11 @@ def load_data():
     x = df.iloc[:, 3:]
     y = df.iloc[:, 1:3]
     x_tensor = torch.tensor(x.values, dtype=torch.float32)
-    x_tensor =normalize_ultrasonics(x_tensor)
+    x_tensor = normalize_ultrasonics(x_tensor)
     y_tensor = torch.tensor(y.values, dtype=torch.float32)
     y_tensor = normalize_motor(y_tensor)
     y_tensor[:, 0] = steering_shifter_to_01(y_tensor[:, 0])  # ステアリングの値を-1~1を0~1に変換
+    
     #y_tensor = steering_shifter_to_01(y_tensor) # -1~1を0~1に変換
     print("\nデータ形式の確認:", "x:", x_tensor.shape, "y:", y_tensor.shape)
     return x_tensor, y_tensor, csv_file
@@ -78,12 +79,12 @@ def denormalize_motor(y_tensor, scale=100):
 
 # -1~1を0~1に変換
 def steering_shifter_to_01(y_tensor):
-    y_tensor[:,0] = (y_tensor[:,0]+1)/2
+    y_tensor = (y_tensor +1 )/2
     return y_tensor
 
 # 0~1を-1~1に変換
 def steering_shifter_to_m11(y_tensor):
-    y_tensor[:,0] = (y_tensor[:,0]-0.5)*2
+    y_tensor = (y_tensor-0.5)*2
     return y_tensor
 
 # カスタムデータセットクラス
@@ -135,7 +136,7 @@ class NeuralNetwork(nn.Module):
         with torch.no_grad():
             predictions = model(x_tensor)
             #predictions = F.softmax(predictions, dim=1)
-        predictions = steering_shifter_to_m11(predictions) # 0~1を-1~1に変換
+        predictions[:,0] = steering_shifter_to_m11(predictions[:,0]) # 0~1を-1~1に変換
         predictions = torch.clamp(predictions, min=-1, max=1)  # Clamp values between -1 and 1
         predictions = denormalize_motor(predictions)
         return predictions
