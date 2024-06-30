@@ -19,7 +19,7 @@ python run.pyで走行！
 | motor.py | 操舵・モーター出力/調整用プログラム |
 | train_pytorch.py | 機械学習用プログラム |
 
-![alt text](image-1.png)
+![alt text](assets/images/programimage.png)
 
 > [!NOTE]
 > それぞれのプログラムは単独チェック等で活用  。
