@@ -62,22 +62,22 @@ class Planner:
     def Right_Left_3(self, dis_FrLH, dis_Fr, dis_FrRH):
         # 検知時の判断
         ## 壁を検知
-        if dis_Fr < self.DETECTION_DISTANCE_Fr or dis_FrLH < self.DETECTION_DISTANCE_RL or dis_FrRH < self.DETECTION_DISTANCE_RL:
+        aa bbb or ccc or ddd:
             ### 左＜右の距離
-            if dis_FrLH < dis_FrRH :
+            ee fff:
                 self.steer_pwm_duty =config.RIGHT
                 self.throttle_pwm_duty = config.FORWARD_C
                 self.message = "右旋回"
             ### 左＞右の距離
-            else:
+            ggg:
                 self.steer_pwm_duty =config.LEFT
                 self.throttle_pwm_duty = config.FORWARD_C
                 self.message = "左旋回"            
         ## 前壁を検知なし
-        else: 
-            self.steer_pwm_duty =config.NUTRAL
-            self.throttle_pwm_duty = config.FORWARD_S
-            self.message = "直進中"
+        hhh: 
+            iii
+            jjj
+            kkk
 
         ## モーターへ出力を返す
         if config.print_plan_result:
@@ -103,21 +103,21 @@ class Planner:
     def RightHand(self, dis_FrRH, dis_RrRH):
         # 検知時の判断
         ## 右壁が遠い
-        if dis_FrRH > self.DETECTION_DISTANCE_TARGET + self.DETECTION_DISTANCE_RANGE and dis_RrRH > self.DETECTION_DISTANCE_TARGET + self.DETECTION_DISTANCE_RANGE:
+        aa bbb and ccc:
                 self.steer_pwm_duty =config.RIGHT
                 self.throttle_pwm_duty = config.FORWARD_C
                 self.message = "右旋回"
         ## 右壁が近い
-        elif dis_FrRH < self.DETECTION_DISTANCE_TARGET - self.DETECTION_DISTANCE_RANGE or dis_RrRH < self.DETECTION_DISTANCE_TARGET - self.DETECTION_DISTANCE_RANGE:
+        dd eee or fff:
             self.steer_pwm_duty =config.LEFT
             self.throttle_pwm_duty = config.FORWARD_C
             self.message = "左旋回"            
         ## ちょうどよい
-        else: 
-            self.steer_pwm_duty =config.NUTRAL
-            self.throttle_pwm_duty = config.FORWARD_S
-            self.message = "直進中"
-
+        ggg: 
+            hhh
+            iii
+            jjj
+            
         ## モーターへ出力を返す
         if config.print_plan_result:
             print(self.message)
