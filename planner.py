@@ -206,7 +206,7 @@ class Planner:
 
     # Neural Netを用いた走行
     if config.HAVE_NN:
-        # train_pytorch.py内で正規化処理を行っているため、ここでは正規化処理を行わない
+        # train_pytorch.py内ので正規化処理を用いる
         def NN(self, model, *args):
             ultrasonic_values = args
             input = normalize_ultrasonics(torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0))

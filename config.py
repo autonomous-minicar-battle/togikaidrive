@@ -24,10 +24,10 @@ plotter = False
 
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
-FORWARD_S = 80 #ストレートでの値, joy_accel1
-FORWARD_C = 60 #カーブでのの値, joy_accel2
+FORWARD_S = 35 #ストレートでの値, joy_accel1
+FORWARD_C = 25 #カーブでのの値, joy_accel2
 STOP = 0
-REVERSE = -50 
+REVERSE = -60 
 # ステアリング用
 LEFT = 100 #<=100
 NUTRAL = 0 
@@ -37,17 +37,17 @@ RIGHT = -100 #<=100
 ## 距離関連、単位はmm
 ### 前壁の停止/検知距離
 DETECTION_DISTANCE_STOP = 150
-DETECTION_DISTANCE_BACK = 150
+DETECTION_DISTANCE_BACK = 200
 DETECTION_DISTANCE_Fr = 150
 ### 右左折判定基準距離
-DETECTION_DISTANCE_RL = 150
+DETECTION_DISTANCE_RL = 350
 ### 他
-DETECTION_DISTANCE_FrLH = 150
-DETECTION_DISTANCE_FrRH = 150
-DETECTION_DISTANCE_RrLH = 150
-DETECTION_DISTANCE_RrRH = 150
-DETECTION_DISTANCE_TARGET = 180 #目標距離
-DETECTION_DISTANCE_RANGE = 60/2 #修正認知半径距離
+DETECTION_DISTANCE_FrLH = 350
+DETECTION_DISTANCE_FrRH = 350
+DETECTION_DISTANCE_RrLH = 350
+DETECTION_DISTANCE_RrRH = 350
+DETECTION_DISTANCE_TARGET = 200 #目標距離
+DETECTION_DISTANCE_RANGE = 50/2 #修正認知半径距離
 
 ## PIDパラメータ(PDまでを推奨)
 K_P = 0.7 #0.7
@@ -57,7 +57,7 @@ K_D = 0.3 #0.3
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
 # 車両調整用パラメータ(motor.pyで調整した後値を入れる)
 ## ステアリングのPWMの値
-STEERING_CENTER_PWM = 410 #410:newcar, #340~360:oldcar
+STEERING_CENTER_PWM = 380 #410:newcar, #340~360:oldcar
 STEERING_WIDTH_PWM = 80
 STEERING_RIGHT_PWM = STEERING_CENTER_PWM + STEERING_WIDTH_PWM
 STEERING_LEFT_PWM = STEERING_CENTER_PWM - STEERING_WIDTH_PWM
@@ -67,9 +67,9 @@ STEERING_LEFT_PWM_LIMIT = 250
 
 ## アクセルのPWM値
 ## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
-THROTTLE_STOPPED_PWM = 390 #390:newcar, #370~390:oldcar
-THROTTLE_FORWARD_PWM = 540
-THROTTLE_REVERSE_PWM = 320
+THROTTLE_STOPPED_PWM = 380 #390:newcar, #370~390:oldcar
+THROTTLE_FORWARD_PWM = 500
+THROTTLE_REVERSE_PWM = 300
 THROTTLE_WIDTH_PWM = 100 
 
 # 超音波センサの設定
@@ -126,11 +126,26 @@ if mode_plan == "NN":
     HAVE_NN = True
 model_dir = "models"
 #model_name = "model_20240527_record_20240519_224821.csv.pth"
-model_name = "model_20240701_record_20240701_012051.csv_epoch_30_uls_RrLH_FrLH_Fr_FrRH_RrRH.pth"
+model_name = "model_20240709_record_20240624_023159.csv_epoch_30_uls_RrLH_FrLH_Fr_FrRH_RrRH.pth"
 model_path = os.path.join(model_dir, model_name)
 hidden_dim = 64 #（隠れ層のノード数）
 num_hidden_layers = 3 #（隠れ層の数）
 batch_size = 8
+model_type = "categorical" #linear, categorical
+num_categories = 3
+# カテゴリ数は揃える↓　
+# -100~100の範囲で小さな値→大きな値の順にする（しないとValueError: bins must increase monotonically.）
+categories_Str = [RIGHT, NUTRAL, LEFT]
+categories_Thr = [FORWARD_C, FORWARD_S, FORWARD_C] #Strに合わせて設定
+bins_Str = [-101] # -101は最小値-100を含むため設定、境界の最大値は100
+#bins_Thr = [-101]
+# 分類の境界：binを設定(pd.cutで使う)
+for i in range(num_categories):
+    bins_Str.append((categories_Str[i]+categories_Str[min(i+1,num_categories-1)])/2)
+bins_Str[-1] = 100
+#for i in range(num_categories):
+#    bins_Thr.append((categories_Thr[i]+categories_Thr[min(i+1,num_categories-1)])/2)
+#bins_Thr[-1] = 100
 
 # コントローラー（ジョイスティックの設定）
 HAVE_CONTROLLER = True #True
