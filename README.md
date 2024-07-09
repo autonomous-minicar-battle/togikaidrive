@@ -120,14 +120,52 @@ K_D = 0.3 #0.3
 
 - config.py内下記修正
 ~~~ python
-# 判断モード選択
-mode_plan = "NN"
+# NNパラメータ
+HAVE_NN = True
+...
+## 学習済みモデルのパス
+model_dir = "models"
+model_name = "model_20240709_record_20240624_023159.csv_epoch_30_uls_RrLH_FrLH_Fr_FrRH_RrRH.pth"
+model_path = os.path.join(model_dir, model_name)
+## モデルと学習のハイパーパラメータ設定
+hidden_dim = 64 #（隠れ層のノード数）
+num_hidden_layers = 3 #（隠れ層の数）
+batch_size = 8
+
+## モデルの種類
+model_type = "categorical" #linear, categorical
+# カテゴリの設定、カテゴリ数は揃える↓　
+num_categories = 3
+# -100~100の範囲で小さな値→大きな値の順にする（しないとValueError: bins must increase monotonically.）
+categories_Str = [RIGHT, NUTRAL, LEFT]
+categories_Thr = [FORWARD_C, FORWARD_S, FORWARD_C] #Strに合わせて設定
+...
+
 ~~~
 
-- train_pytorch.pyで学習
+- train_test_pytorch.pyで学習
 ~~~ shell
 python train_pytorch.py
 ~~~
+
+- test_pytorch.pyで確認
+~~~ shell
+python train_pytorch.py
+~~~
+model_type = "categorical"の場合、正解ラベルの正解率とconfusion matrix(混合行列)を表示
+~~~ shell
+...
+正解率_Str:  92 %
+confusion matrix_Str:
+ Predicted  0.0  2.0   All
+True
+0.0        519   33   552
+1.0         11   38    49
+2.0          2  586   588
+All        532  657  1189
+~~~
+
+
 
 #### 4. 壁にぶつかったらバックしてみよう（制御の追加変更）  
 planner.pyとrun.pyを各自変更

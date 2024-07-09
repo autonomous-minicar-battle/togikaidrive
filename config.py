@@ -122,21 +122,25 @@ N_ultrasonics = len(ultrasonics_list)
 
 # NNパラメータ
 HAVE_NN = False
-if mode_plan == "NN":
-    HAVE_NN = True
+if mode_plan == "NN": HAVE_NN = True
+
+## 学習済みモデルのパス
 model_dir = "models"
-#model_name = "model_20240527_record_20240519_224821.csv.pth"
 model_name = "model_20240709_record_20240624_023159.csv_epoch_30_uls_RrLH_FrLH_Fr_FrRH_RrRH.pth"
 model_path = os.path.join(model_dir, model_name)
+## モデルと学習のハイパーパラメータ設定
 hidden_dim = 64 #（隠れ層のノード数）
 num_hidden_layers = 3 #（隠れ層の数）
 batch_size = 8
+
+## モデルの種類
 model_type = "categorical" #linear, categorical
+# カテゴリの設定、カテゴリ数は揃える↓　
 num_categories = 3
-# カテゴリ数は揃える↓　
 # -100~100の範囲で小さな値→大きな値の順にする（しないとValueError: bins must increase monotonically.）
 categories_Str = [RIGHT, NUTRAL, LEFT]
 categories_Thr = [FORWARD_C, FORWARD_S, FORWARD_C] #Strに合わせて設定
+
 bins_Str = [-101] # -101は最小値-100を含むため設定、境界の最大値は100
 #bins_Thr = [-101]
 # 分類の境界：binを設定(pd.cutで使う)
