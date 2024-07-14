@@ -3,8 +3,8 @@ import numpy as np
 import config
 import time
 if config.HAVE_NN: 
-    import torch
-    from train_pytorch import denormalize_motor, normalize_ultrasonics 
+    import torch.tensor
+    from train_pytorch_test import denormalize_motor, normalize_ultrasonics 
 
 class Planner:
     def __init__(self, name):
@@ -15,10 +15,6 @@ class Planner:
         self.DETECTION_DISTANCE_Fr = config.DETECTION_DISTANCE_Fr
         self.DETECTION_DISTANCE_RL = config.DETECTION_DISTANCE_RL
         # 検知距離設定　他
-        self.DETECTION_DISTANCE_FrLH = config.DETECTION_DISTANCE_FrLH
-        self.DETECTION_DISTANCE_FrRH = config.DETECTION_DISTANCE_FrRH
-        self.DETECTION_DISTANCE_FrLH = config.DETECTION_DISTANCE_FrLH
-        self.DETECTION_DISTANCE_FrRH = config.DETECTION_DISTANCE_FrRH
         self.DETECTION_DISTANCE_STOP = config.DETECTION_DISTANCE_STOP
         self.DETECTION_DISTANCE_BACK = config.DETECTION_DISTANCE_BACK
         self.DETECTION_DISTANCE_TARGET = config.DETECTION_DISTANCE_TARGET

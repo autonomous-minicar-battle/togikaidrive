@@ -165,7 +165,7 @@ class NeuralNetwork(nn.Module):
 
 
 # トレーニング関数
-def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=100):
+def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=config.epochs):
     model.train()  # モデルをトレーニングモードに設定
     loss_history = []  # Loss values for plotting
     for epoch in range(start_epoch, start_epoch + epochs):
@@ -273,11 +273,11 @@ def test_model(model, model_path, dataset,sample_num=5):
         x1, y1 = next(tmp) # 1バッチ分のデータを取り出す
         x = torch.cat([x, x1])
         y = torch.cat([y, y1])
-        #yh1 = model.predict(model, x1)
-        yh1 = model.predict_label(model, x1)     
-        if config.model_type == "linear":        
+        if config.model_type == "linear": 
+            yh1 = model.predict(model, x1)
             yh = torch.cat([yh, yh1])
         elif config.model_type == "categorical":
+            yh1 = model.predict_label(model, x1)     
             yh = torch.cat([yh, torch.tensor([yh1, config.categories_Str[yh1]]).unsqueeze(0) ])
                 
     print("\n入力データ:")
@@ -294,7 +294,7 @@ def test_model(model, model_path, dataset,sample_num=5):
         print("\n正解率_Thr: ", 
               int(torch.sum(y[:,1] == yh[:,1]).item()/sample_num*100),"%")
 
-    print("\n使用したモデル：",os.path.split(model_path)[-1])
+    print("\n使用したモデル名：",os.path.split(model_path)[-1])
 
 
 def main():
@@ -309,8 +309,8 @@ def main():
     input_dim = x_tensor.shape[1]
     output_dim = y_tensor.shape[1]
     model = NeuralNetwork(input_dim, output_dim, config.hidden_dim, config.num_hidden_layers)
-    
-    # 損失関数と最適化手法の設定
+    print("モデル構造: ",model)
+
     # 損失関数と最適化手法の設定
     if config.model_type == "categorical":
         criterion = nn.CrossEntropyLoss()  # Cross Entropy Loss for classification
@@ -325,8 +325,8 @@ def main():
     if continue_training:
         start_epoch = load_model(model, None, optimizer, 'models')
     else: start_epoch =0
-    try: epochs = int(input("学習するエポック数を入力してください.(デフォルト:30): ").strip())
-    except ValueError: epochs = 30
+    try: epochs = int(input(f"学習するエポック数を入力してください.(デフォルト:{config.epochs}): ").strip())
+    except ValueError: epochs = config.epochs
     
     # モデルのトレーニング
     epoch = train_model(model, dataloader, criterion, optimizer, start_epoch=start_epoch, epochs=epochs)
