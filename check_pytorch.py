@@ -1,4 +1,4 @@
-from train_pytorch_test import load_data, CustomDataset, NeuralNetwork,  test_model
+from train_pytorch import load_data, CustomDataset, NeuralNetwork,  test_model
 import os
 import sys
 import time

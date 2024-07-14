@@ -4,7 +4,7 @@ import config
 import time
 if config.HAVE_NN: 
     import torch.tensor
-    from train_pytorch_test import denormalize_motor, normalize_ultrasonics 
+    from train_pytorch import denormalize_motor, normalize_ultrasonics 
 
 class Planner:
     def __init__(self, name):

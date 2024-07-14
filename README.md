@@ -93,12 +93,14 @@ config.pyを変更して保存。
 ~~~ python
 # 復帰モード選択
 mode_recovery = "Stop"
-recovery_time = 0.3
+recovery_time = 0.3 #総復帰時間
+recovery_braking = 1 #ブレーキ回数、ブレーキにはReverseを利用
+
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
-FORWARD_S = 80 #ストレートでの値, joy_accel1
-FORWARD_C = 60 #カーブでのの値, joy_accel2
-REVERSE = -50 
+FORWARD_S = 40 #ストレートでの値, joy_accel1
+FORWARD_C = 30 #カーブでのの値, joy_accel2
+REVERSE = -100 
 ~~~
 
 
@@ -152,7 +154,8 @@ python train_pytorch.py
 ~~~ shell
 python train_pytorch.py
 ~~~
-model_type = "categorical"の場合、正解ラベルの正解率とconfusion matrix(混合行列)を表示
+model_type = "categorical"の場合、正解ラベルの正解率とconfusion matrix(混合行列)を表示。
+下記の例では、1.0が予測されていない。
 ~~~ shell
 ...
 正解率_Str:  92 %
@@ -173,9 +176,13 @@ planner.pyとrun.pyを各自変更
 
 ### 走行実習
 myparam_run.py内のパラメータを変更し、パラメータの変更による走行の変化を体験する
-#### コース：愛知県コース
+#### コース：愛知県コース（切り返しが必要になる）
  
 >TODO: 愛知県コースの絵
+
+#### コース：オーバルコース（NNの走行がスムーズになりやすい）
+ 
+>TODO: オーバルコースの絵
 
 ### 分析実習
    1. 超音波センサの値を確認しよう（実測値のバラツキ）    
@@ -254,10 +261,15 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 | togikai基盤 | サーボドライバ代替 |任意| --- |  HC-SR04*8個接続用ジャンパピン・ PCA9685 2ch・OLED・ファン電源搭載、秋月BNO055モジュール追加搭載用I2Cスルーホール有 |
 
 #### 組み立てマニュアル
-＊工事中
+>TODO: 情報入れる
+
+### 制限部門貸し出しマシン２０２４～（試験走行中）
+>TODO: 情報入れる
+
 #### 環境構築
 ##### 選択肢１：既存のイメージをベースに環境構築
 下記を実施したイメージは[こちら]()
+>TODO: GDriveで配信
 
 1. [リンク](https://drive.google.com/file/d/1uiUkqMNAAhONLD7ZHmhPery9QN9qlK32/view?usp=sharing)先をダウンロードしイメージをSDカードに焼く。
 詳細は[参照](https://faboplatform.github.io/DonkeyDocs/7.SD%E3%82%AB%E3%83%BC%E3%83%89%E4%BD%9C%E6%88%90/01.os_install/)

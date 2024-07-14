@@ -14,7 +14,7 @@ motor_Nrecords = 3
 
 # 復帰モード選択
 mode_recovery = "Back" #None, Back, Stop
-recovery_time = 0.1 #総復帰時間、
+recovery_time = 0.1 #総復帰時間
 recovery_braking = 1 #ブレーキ回数、ブレーキにはReverseを利用
 
 # 出力系

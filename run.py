@@ -31,8 +31,7 @@ import planner
 if config.HAVE_CONTROLLER: import joystick
 if config.HAVE_CAMERA: import camera_multiprocess
 if config.HAVE_IMU: import gyro
-#if config.HAVE_NN: import train_pytorch
-if config.HAVE_NN: import train_pytorch_test as train_pytorch
+if config.HAVE_NN: import train_pytorch
 
 # First Person Viewでの走行画像表示
 if config.fpv:
