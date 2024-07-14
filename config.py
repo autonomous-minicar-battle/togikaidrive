@@ -7,14 +7,14 @@ model_plan_list = ["GoStraight",
                    "Right_Left_3","Right_Left_3_Records",
                    "RightHand","RightHand_PID","LeftHand","LeftHand_PID",
                    "NN"]
-mode_plan = "NN"
+mode_plan = "Right_Left_3_Records"
 # 判断モード関連パラメータ
 ## 過去の操作値記録回数
-motor_Nrecords = 5
+motor_Nrecords = 3
 
 # 復帰モード選択
 mode_recovery = "Back" #None, Back, Stop
-recovery_time = 0.3
+recovery_time = 0.1
 
 # 出力系
 # 判断結果出力、Thonyのplotterを使うならFalse
@@ -24,10 +24,10 @@ plotter = False
 
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
-FORWARD_S = 35 #ストレートでの値, joy_accel1
-FORWARD_C = 25 #カーブでのの値, joy_accel2
+FORWARD_S = 70 #ストレートでの値, joy_accel1
+FORWARD_C = 55 #カーブでのの値, joy_accel2
 STOP = 0
-REVERSE = -60 
+REVERSE = -100 
 # ステアリング用
 LEFT = 100 #<=100
 NUTRAL = 0 
@@ -36,11 +36,11 @@ RIGHT = -100 #<=100
 # 超音波センサの検知パラメータ 
 ## 距離関連、単位はmm
 ### 前壁の停止/検知距離
-DETECTION_DISTANCE_STOP = 150
-DETECTION_DISTANCE_BACK = 200
+DETECTION_DISTANCE_STOP = 250
+DETECTION_DISTANCE_BACK = 150
 DETECTION_DISTANCE_Fr = 150
 ### 右左折判定基準距離
-DETECTION_DISTANCE_RL = 350
+DETECTION_DISTANCE_RL = 550
 ### 他
 DETECTION_DISTANCE_FrLH = 350
 DETECTION_DISTANCE_FrRH = 350
@@ -57,8 +57,8 @@ K_D = 0.3 #0.3
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
 # 車両調整用パラメータ(motor.pyで調整した後値を入れる)
 ## ステアリングのPWMの値
-STEERING_CENTER_PWM = 380 #410:newcar, #340~360:oldcar
-STEERING_WIDTH_PWM = 80
+STEERING_CENTER_PWM = 410 #410:newcar, #340~360:oldcar
+STEERING_WIDTH_PWM = 100
 STEERING_RIGHT_PWM = STEERING_CENTER_PWM + STEERING_WIDTH_PWM
 STEERING_LEFT_PWM = STEERING_CENTER_PWM - STEERING_WIDTH_PWM
 ### !!!ステアリングを壊さないための上限下限の値設定  
@@ -69,15 +69,15 @@ STEERING_LEFT_PWM_LIMIT = 250
 ## モーターの回転音を聞き、音が変わらないところが最大/最小値とする
 THROTTLE_STOPPED_PWM = 380 #390:newcar, #370~390:oldcar
 THROTTLE_FORWARD_PWM = 500
-THROTTLE_REVERSE_PWM = 300
+THROTTLE_REVERSE_PWM = 250
 THROTTLE_WIDTH_PWM = 100 
 
 # 超音波センサの設定
 ## 使う超音波センサ位置の指示、計測ループが遅い場合は数を減らす
 ### 前３つ使う場合はこちらをコメントアウト外す
-#ultrasonics_list = ["FrLH","Fr","FrRH"]
+ultrasonics_list = ["FrLH","Fr","FrRH"]
 ### ５つ使う場合はこちらをコメントアウト外す
-ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
+#ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 ### ８つ使う場合ははこちらのコメントアウト外す
 #ultrasonics_list.extend(["BackRH", "Back", "BackLH"])
 ### ほかのファイルで使うためリスト接続名
@@ -86,9 +86,9 @@ ultrasonics_list_join = "uls_"+"_".join(ultrasonics_list)
 ## 超音波センサの測定回数、ultrasonic.pyチェック用
 sampling_times = 100
 ## 目標サンプリング周期（何秒に１回）、複数センサ利用の場合は合計値、
-sampling_cycle = 0.05
+sampling_cycle = 0.01
 ## 過去の超音波センサの値記録回数
-ultrasonics_Nrecords = 5
+ultrasonics_Nrecords = 3
 
 # GPIOピン番号:超音波センサの位置の対応とPWMピンのチャンネル
 ## 新旧ボードの指定

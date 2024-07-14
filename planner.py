@@ -39,12 +39,12 @@ class Planner:
         self.records_throttle_pwm_duty = np.zeros(config.motor_Nrecords)
 
 
-    # 前側１センサーを用いた後退
-    def Back(self, ultrasonic_Fr):
+    # 前側3センサーを用いた後退
+    def Back(self, ultrasonic_Fr, ultrasonic_FrRH, ultrasonic_FrLH):
     ## 目前に前壁をtimes回検知
         times = 3
         # elifではなく、別のif文として評価
-        if max(ultrasonic_Fr.records[:times]) < self.DETECTION_DISTANCE_BACK:
+        if min(max(ultrasonic_Fr.records[:times]),max(ultrasonic_FrRH.records[:times]),max(ultrasonic_FrLH.records[:times])) < self.DETECTION_DISTANCE_BACK :
             self.flag_back = True
             print("後退")
         elif max(ultrasonic_Fr.records[:times]) > self.DETECTION_DISTANCE_BACK:
