@@ -3,7 +3,7 @@ import numpy as np
 import config
 import time
 if config.HAVE_NN: 
-    import torch
+    import torch.tensor
     from train_pytorch import denormalize_motor, normalize_ultrasonics 
 
 class Planner:
@@ -15,10 +15,6 @@ class Planner:
         self.DETECTION_DISTANCE_Fr = config.DETECTION_DISTANCE_Fr
         self.DETECTION_DISTANCE_RL = config.DETECTION_DISTANCE_RL
         # 検知距離設定　他
-        self.DETECTION_DISTANCE_FrLH = config.DETECTION_DISTANCE_FrLH
-        self.DETECTION_DISTANCE_FrRH = config.DETECTION_DISTANCE_FrRH
-        self.DETECTION_DISTANCE_FrLH = config.DETECTION_DISTANCE_FrLH
-        self.DETECTION_DISTANCE_FrRH = config.DETECTION_DISTANCE_FrRH
         self.DETECTION_DISTANCE_STOP = config.DETECTION_DISTANCE_STOP
         self.DETECTION_DISTANCE_BACK = config.DETECTION_DISTANCE_BACK
         self.DETECTION_DISTANCE_TARGET = config.DETECTION_DISTANCE_TARGET
@@ -39,12 +35,12 @@ class Planner:
         self.records_throttle_pwm_duty = np.zeros(config.motor_Nrecords)
 
 
-    # 前側１センサーを用いた後退
-    def Back(self, ultrasonic_Fr):
+    # 前側3センサーを用いた後退
+    def Back(self, ultrasonic_Fr, ultrasonic_FrRH, ultrasonic_FrLH):
     ## 目前に前壁をtimes回検知
         times = 3
         # elifではなく、別のif文として評価
-        if max(ultrasonic_Fr.records[:times]) < self.DETECTION_DISTANCE_BACK:
+        if min(max(ultrasonic_Fr.records[:times]),max(ultrasonic_FrRH.records[:times]),max(ultrasonic_FrLH.records[:times])) < self.DETECTION_DISTANCE_BACK :
             self.flag_back = True
             print("後退")
         elif max(ultrasonic_Fr.records[:times]) > self.DETECTION_DISTANCE_BACK:
@@ -206,7 +202,7 @@ class Planner:
 
     # Neural Netを用いた走行
     if config.HAVE_NN:
-        # train_pytorch.py内で正規化処理を行っているため、ここでは正規化処理を行わない
+        # train_pytorch.py内ので正規化処理を用いる
         def NN(self, model, *args):
             ultrasonic_values = args
             input = normalize_ultrasonics(torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0))

@@ -52,11 +52,20 @@ class Ultrasonic:
 
         
 if __name__ == "__main__":
+    import config
+    import RPi.GPIO as GPIO
+    GPIO.setwarnings(False)
+    ## GPIOピン番号の指示方法
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(config.e_list,GPIO.IN)
+    GPIO.setup(config.t_list,GPIO.OUT,initial=GPIO.LOW)
+
     # 超音波センサを設定、使う分だけリストにultrasonicインスタンスを入れる
     #ultraconic = Ultraconic(config.t_list[0],config.e_list[0]) 
     ultrasonics = [] 
     # 一つだけ使う場合、複数使う場合はコメントアウト外す
-    config.ultrasonics_list = ["Fr"]
+    #config.ultrasonics_list = ["Fr"]
+    config.ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
     for name in config.ultrasonics_list:
         ultrasonics.append(Ultrasonic(name))
 

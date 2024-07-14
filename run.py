@@ -90,10 +90,10 @@ if config.HAVE_IMU:
     ## angle, acc, gyr = imu.measure_set()
 
 # コントローラーの初期化
-mode = "auto"
 if config.HAVE_CONTROLLER:
     joystick = joystick.Joystick()
-    mode = "user"
+    mode = joystick.mode[0]
+    print("Starting mode: ",mode)
 
 # 一時停止（Enterを押すとプログラム実行開始）
 print('Enterを押して走行開始!')
@@ -169,6 +169,13 @@ try:
                     throttle_pwm_duty  = int(config.FORWARD_S)
                 elif joystick.accel1:
                     throttle_pwm_duty  = int(config.FORWARD_C)
+            elif mode == "auto_str":
+                throttle_pwm_duty = int(joystick.accel*config.JOYSTICK_THROTTLE_SCALE*100)
+                if joystick.accel2:
+                    throttle_pwm_duty  = int(config.FORWARD_S)
+                elif joystick.accel1:
+                    throttle_pwm_duty  = int(config.FORWARD_C)
+            
             if joystick.recording: 
                 recording = True
             else: 
@@ -215,27 +222,30 @@ try:
         if config.mode_recovery == "None":
             pass
 
-        elif config.mode_recovery == "Back":  
+        elif config.mode_recovery == "Back" and mode != "user":  
             ### 後退
-            plan.Back(ultrasonics["Fr"])
+            plan.Back(ultrasonics["Fr"],ultrasonics["FrRH"],ultrasonics["FrLH"])
             if plan.flag_back == True:
-                motor.set_steer_pwm_duty(config.NUTRAL)
-                motor.set_throttle_pwm_duty(config.REVERSE)
-                time.sleep(config.recovery_time)
+                for _ in range(config.recovery_braking):
+                    motor.set_steer_pwm_duty(config.NUTRAL)
+                    motor.set_throttle_pwm_duty(config.REVERSE)
+                    time.sleep(config.recovery_time)
             else: 
                 pass
 
-        elif config.mode_recovery == "Stop":
+        elif config.mode_recovery == "Stop" and mode != "user":
             ### 停止
             plan.Stop(ultrasonics["Fr"])
             if plan.flag_stop ==True:
-                ## 停止動作
                 motor.set_steer_pwm_duty(config.NUTRAL)
+                for _ in range(config.recovery_braking):
+                    motor.set_throttle_pwm_duty(config.STOP)
+                    time.sleep(0.02)
+                    motor.set_throttle_pwm_duty(config.REVERSE)
+                    time.sleep(0.1)
+                    time.sleep(config.recovery_time/config.recovery_braking)
                 motor.set_throttle_pwm_duty(config.STOP)
-                time.sleep(0.05)
-                motor.set_throttle_pwm_duty(config.REVERSE)
-                time.sleep(0.05)
-                motor.set_throttle_pwm_duty(config.STOP)
+                plan.flag_stop = False
                 print("一時停止、Enterを押して走行再開!")
                 input()
                 #break
