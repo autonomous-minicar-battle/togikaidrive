@@ -7,7 +7,7 @@ model_plan_list = ["GoStraight",
                    "Right_Left_3","Right_Left_3_Records",
                    "RightHand","RightHand_PID","LeftHand","LeftHand_PID",
                    "NN"]
-mode_plan = "NN"
+mode_plan = "Right_Left_3"
 # 判断モード関連パラメータ
 ## 過去の操作値記録回数
 motor_Nrecords = 3
@@ -205,13 +205,14 @@ if not os.path.exists(records):
 record_filename = './'+records+'/record_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
 # 画像保存
-img_size = (IMAGE_W, IMAGE_H, IMAGE_DEPTH)
-images = "images"
-if not os.path.exists(images):
-    # ディレクトリが存在しない場合、ディレクトリを作成する
-    os.makedirs(images)
-    print("make dir as ",images)
-## 記録するフォルダ名
-image_dir = './'+images+'/image_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-os.makedirs(image_dir)
-print("make dir as ",image_dir)
+if HAVE_CAMERA ==True:
+    img_size = (IMAGE_W, IMAGE_H, IMAGE_DEPTH)
+    images = "images"
+    if not os.path.exists(images):
+        # ディレクトリが存在しない場合、ディレクトリを作成する
+        os.makedirs(images)
+        print("make dir as ",images)
+    ## 記録するフォルダ名
+    image_dir = './'+images+'/image_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    os.makedirs(image_dir)
+    print("make dir as ",image_dir)
