@@ -7,6 +7,7 @@ import numpy as np
 
 class Joystick(object):
     def __init__(self, dev_fn=config.JOYSTICK_DEVICE_FILE):
+        self.HAVE_CONTROLLER = True
         self.stick_left = config.JOYSTICK_AXIS_LEFT
         self.stick_right = config.JOYSTICK_AXIS_RIGHT
         self.button_Y = config.JOYSTICK_Y
@@ -32,7 +33,9 @@ class Joystick(object):
             print('ジョイスティックの名前:', self.joystick.get_name())
             print('ボタン数 :', self.joystick.get_numbuttons())
         except pygame.error:
-            print('ジョイスティックが接続されていません')
+            self.HAVE_CONTROLLER = False
+            print('ジョイスティックが接続されていません。ジョイスティックをOFFにします。')
+            
     
     #def poll(self,steer,accel,accel1,accel2,breaking):
     def poll(self):

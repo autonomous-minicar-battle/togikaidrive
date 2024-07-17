@@ -92,6 +92,7 @@ if config.HAVE_IMU:
 # コントローラーの初期化
 if config.HAVE_CONTROLLER:
     joystick = joystick.Joystick()
+    if joystick.HAVE_CONTROLLER == False: config.HAVE_CONTROLLER = False
     mode = joystick.mode[0]
     print("Starting mode: ",mode)
 
