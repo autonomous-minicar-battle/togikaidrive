@@ -353,13 +353,21 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
 
    3. その他
    - [最新のRaspiOSでRealVNCが使えない問題の解決方法](https://qiita.com/konchi_konnection/items/c8e2258f0a7efb49302f)
-   - イメージの書き出し
+
+   - イメージの書き出し手順
    [参考](https://zenn.dev/takeyan/books/e2c68f8be4ba54/viewer/4d3b53)
-   >[!NOTE]
-   > ラズパイはSDの容量で自動拡張しないため、[Pishrink](https://github.com/Drewsif/PiShrink?fbclid=IwZXh0bgNhZW0CMTAAAR22pQNfbRI-CtGIEqEvlA_xV1-r6faoMIvvau9yBdL2gAle7n3uh6A0DTM_aem_KjcRhs5-_aCddZyr-lsXrw)を用いて圧縮する
 
+   1. [Win32 Disk Imager](https://forest.watch.impress.co.jp/docs/review/1067836.html) でラズパイのSDカードからイメージを作成
+    GoogleDriveとの兼ね合いのため、[改良版](https://github.com/dnobori/DN-Win32DiskImagerRenewal)を使うことをオススメします。
 
+   2. [Pishrink](https://github.com/Drewsif/PiShrink?fbclid=IwZXh0bgNhZW0CMTAAAR22pQNfbRI-CtGIEqEvlA_xV1-r6faoMIvvau9yBdL2gAle7n3uh6A0DTM_aem_KjcRhs5-_aCddZyr-lsXrw)を使ってイメージファイルを圧縮。
+書きだしたイメージはSDカードのサイズと同じで大きな容量になってしまうのと、
+   　　新しく書き込むSDカードが元のイメージより小さい（同じでもたまに失敗）場合書き込めないため、拡張がされるように圧縮します。
+   ＊Linuxが必要なため、WindowsPCの人はWSLを利用。
    
+   3. 圧縮されたイメージファイルをbalenaEtcherやRaspberry Pi Imagerで新しいSDカードに焼く。
+
+
 
 ###### ライブラリ類
    1. [OpenCV](https://opencv.org/)

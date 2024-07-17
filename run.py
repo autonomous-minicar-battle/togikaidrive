@@ -92,6 +92,7 @@ if config.HAVE_IMU:
 # コントローラーの初期化
 if config.HAVE_CONTROLLER:
     joystick = joystick.Joystick()
+    if joystick.HAVE_CONTROLLER == False: config.HAVE_CONTROLLER = False
     mode = joystick.mode[0]
     print("Starting mode: ",mode)
 
@@ -237,7 +238,7 @@ try:
             ### 停止
             plan.Stop(ultrasonics["Fr"])
             if plan.flag_stop ==True:
-                motor.set_steer_pwm_duty(config.NUTRAL)
+                motor.set_steer_pwm_duty(config.recovery_str)
                 for _ in range(config.recovery_braking):
                     motor.set_throttle_pwm_duty(config.STOP)
                     time.sleep(0.02)
@@ -264,7 +265,7 @@ finally:
     #np.savetxt(config.record_filename, d_stack[1:], fmt='4f',header=header, comments="")
     print('記録停止')
     print("記録保存--> ",config.record_filename)
-    print("画像保存--> ",config.image_dir)
+    if config.HAVE_CAMERA: print("画像保存--> ",config.image_dir)
 
 header ="Tstamp, Str, Thr, "
 for name in config.ultrasonics_list:

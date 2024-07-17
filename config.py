@@ -2,27 +2,6 @@
 import datetime
 import os
 
-# 判断モード選択
-model_plan_list = ["GoStraight",
-                   "Right_Left_3","Right_Left_3_Records",
-                   "RightHand","RightHand_PID","LeftHand","LeftHand_PID",
-                   "NN"]
-mode_plan = "Right_Left_3"
-# 判断モード関連パラメータ
-## 過去の操作値記録回数
-motor_Nrecords = 3
-
-# 復帰モード選択
-mode_recovery = "Back" #None, Back, Stop
-recovery_time = 0.1 #総復帰時間
-recovery_braking = 1 #ブレーキ回数、ブレーキにはReverseを利用
-
-# 出力系
-# 判断結果出力、Thonyのplotterを使うならFalse
-print_plan_result = False
-# Thonnyのplotterを使う場合
-plotter = False
-
 # モーター出力パラメータ （デューティー比：-100~100で設定）
 # スロットル用
 FORWARD_S = 40 #ストレートでの値, joy_accel1
@@ -50,6 +29,29 @@ DETECTION_DISTANCE_RANGE = 50/2 #修正認知半径距離
 K_P = 0.7 #0.7
 K_I = 0.0 #0.0
 K_D = 0.3 #0.3
+
+# 判断モード選択
+model_plan_list = ["GoStraight",
+                   "Right_Left_3","Right_Left_3_Records",
+                   "RightHand","RightHand_PID","LeftHand","LeftHand_PID",
+                   "NN"]
+mode_plan = "Right_Left_3"
+
+# 判断モード関連パラメータ
+## 過去の操作値記録回数
+motor_Nrecords = 3
+
+# 復帰モード選択
+mode_recovery = "Back" #None, Back, Stop
+recovery_str = LEFT # 復帰時のステアリング値
+recovery_time = 0.1 #総復帰時間
+recovery_braking = 1 #ブレーキ回数、ブレーキにはReverseを利用
+
+# 出力系
+# 判断結果出力、Thonyのplotterを使うならFalse
+print_plan_result = False
+# Thonnyのplotterを使う場合
+plotter = False
 
 #↑↑↑体験型イベント向けパラメータはここまで↑↑↑～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～
 # 車両調整用パラメータ(motor.pyで調整した後値を入れる)
