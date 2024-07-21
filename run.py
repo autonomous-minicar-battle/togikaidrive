@@ -31,7 +31,7 @@ import planner
 if config.HAVE_CONTROLLER: import joystick
 if config.HAVE_CAMERA: import camera_multiprocess
 if config.HAVE_IMU: import gyro
-if config.HAVE_NN: import train_pytorch
+if config.mode_plan in ["NN","CNN"]: from train_pytorch import NeuralNetwork, ConvolutionalNeuralNetwork, load_model
 
 # First Person Viewでの走行画像表示
 if config.fpv:
@@ -72,16 +72,27 @@ print(" ", config.ultrasonics_list)
 plan = planner.Planner(config.mode_plan)
 
 # NNモデルの読み込み
-if config.HAVE_NN:
-    ## NNモデルの初期化
+if config.mode_plan == "NN":
+    ## モデルの初期化
     ## 使う超音波センサの数、出力数、隠れ層の次元、隠れ層の数
-    model = train_pytorch.NeuralNetwork(
+    model = NeuralNetwork(
         len(config.ultrasonics_list), 2,
         config.hidden_dim, config.num_hidden_layers)
     ## 保存したモデルをロード
     print("\n保存したモデルをロードします: ", config.model_path)
-    train_pytorch.load_model(model, config.model_path, None, config.model_dir)
+    load_model(model, config.model_path, None, config.model_dir)
     print(model)
+
+# CNNモデルの読み込み
+if config.mode_plan == "CNN":
+    ## モデルの初期化
+    ## 使う超音波センサの数、出力数、隠れ層の次元、隠れ層の数
+    model = ConvolutionalNeuralNetwork()
+    ## 保存したモデルをロード
+    print("\n保存したモデルをロードします: ", config.model_path)
+    load_model(model, config.model_path, None, config.model_dir)
+    print(model)
+
 
 #　imuの初期化
 if config.HAVE_IMU:
@@ -148,12 +159,17 @@ try:
         elif config.mode_plan == "LeftHand_PID":
             steer_pwm_duty, throttle_pwm_duty  = plan.LeftHand_PID(ultrasonics["FrLH"], ultrasonics["RrLH"])
         ## ニューラルネットを使ってスムーズに走る
-        #評価中
         elif config.mode_plan == "NN":
             # 超音波センサ入力が変更できるように引数をリストにして渡す形に変更
             args = [ultrasonics[key].dis for key in config.ultrasonics_list]
             steer_pwm_duty, throttle_pwm_duty = plan.NN(model, *args)
             #steer_pwm_duty, throttle_pwm_duty  = plan.NN(model, ultrasonics["FrLH"].dis, ultrasonics["Fr"].dis, ultrasonics["FrRH"].dis)
+        ## CNNを使ってスムーズに走る
+        # 評価中
+        elif config.mode_plan == "CNN":
+            # 画像の取得
+            _, img = cam.read()
+            steer_pwm_duty, throttle_pwm_duty = plan.CNN(model, img)
         else: 
             print("デフォルトの判断モードの選択ではありません, コードを書き換えてオリジナルのモードを実装しよう!")
             break
@@ -209,7 +225,8 @@ try:
             d_stack = np.vstack((d_stack, np.insert(d, 0, [ts, steer_pwm_duty, throttle_pwm_duty]),))
             ### 画像保存 ret:カメラ認識、img：画像
             if config.HAVE_CAMERA and not config.fpv:
-                ret, img = cam.read()
+                if not config.mode_plan == "CNN":
+                    _, img = cam.read()
                 cam.save(img, ts, steer_pwm_duty, throttle_pwm_duty, config.image_dir)
 
         ## 全体の状態を出力      
