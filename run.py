@@ -227,7 +227,7 @@ try:
             if config.HAVE_CAMERA and not config.fpv:
                 if not config.mode_plan == "CNN":
                     _, img = cam.read()
-                cam.save(img, ts, steer_pwm_duty, throttle_pwm_duty, config.image_dir)
+                cam.save(img, "%10.2f"%(ts), steer_pwm_duty, throttle_pwm_duty, config.image_dir, config.IMAGE_W, config.IMAGE_H)
 
         ## 全体の状態を出力      
         #print("Rec:"+recording, "Mode:",mode,"RunTime:",ts_run ,"Str:",steer_pwm_duty,"Thr:",throttle_pwm_duty,"Uls:", message) #,end=' , '

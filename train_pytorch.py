@@ -12,6 +12,12 @@ import matplotlib.pyplot as plt
 
 import config
 
+if config.mode_plan == "CNN": 
+    from PIL import Image
+    from torchvision import transforms
+    import torch.optim as optim
+
+
 # データの読み込みと前処理
 def load_data():
     folder = "records"
@@ -76,7 +82,11 @@ def load_data():
         print("学習データサイズ:", "y:", y_tensor.shape, "x:", x_tensor.shape, "\n")
 
     #y_tensor = steering_shifter_to_01(y_tensor) # -1~1を0~1に変換
-    return x_tensor, y_tensor, csv_file
+
+    # timestampの取得
+    ts = df.iloc[:, 0]
+
+    return x_tensor, y_tensor, csv_file, ts
 
 def normalize_ultrasonics(x_tensor, scale=2000):
     x_tensor = x_tensor / scale # 2000mmを1として正規化
@@ -163,9 +173,119 @@ class NeuralNetwork(nn.Module):
             #print("predictions:",predictions)
         return predictions
 
+class CustomImageDataset(torch.utils.data.Dataset):
+    def __init__(self, root_dir, y_tensor, ts, transform=None):
+        self.root_dir = root_dir
+        self.transform = transform
+        self.y_tensor = y_tensor
+        self.image_paths = []
+        self.labels = []
+
+        # タイムスタンプをキーとしてインデックスをマップ
+        #self.tstamp_to_index = {tstamp: i for i, tstamp in enumerate(df['Tstamp'])}
+        self.tstamp_to_index = {tstamp: i for i, tstamp in enumerate(ts)}
+
+        print("画像パスとラベルを設定中...")
+        for subdir in os.listdir(root_dir):
+            subdir_path = os.path.join(root_dir, subdir)
+            if os.path.isdir(subdir_path):
+                for img_name in os.listdir(subdir_path):
+                    tstamp = float(img_name.split('_')[0])  # 例：1718996914.99_100_100.jpgからタイムスタンプを取得
+                    if tstamp in self.tstamp_to_index:
+                        self.image_paths.append(os.path.join(subdir_path, img_name))
+                        index = self.tstamp_to_index[tstamp]
+                        self.labels.append(y_tensor[index])
+
+        print(f"画像パスとラベルの設定完了。画像数: {len(self.image_paths)}")
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, idx):
+        img_path = self.image_paths[idx]
+        image = Image.open(img_path).convert("RGB")
+        if self.transform:
+            image = self.transform(image)
+        labels = self.labels[idx]
+        return image, labels
+
+
+class ConvolutionalNeuralNetwork(nn.Module):
+    def __init__(self, 
+                 input_dim = (config.IMAGE_W, config.IMAGE_H, config.IMAGE_DEPTH),
+                 #input_dim: Tuple[int, ...] = (120, 160, 3)
+                 output_dim = 2
+                 ):
+        super(ConvolutionalNeuralNetwork, self).__init__()
+        self.dropout = nn.Dropout(0.2)
+        self.relu = nn.ReLU()
+        #self.pool = nn.MaxPool2d(2, stride=2)
+
+        # channel,conved channel,filter(kernel) size
+        self.conv1 = nn.Conv2d(3,24,5,stride=2)
+        self.conv2 = nn.Conv2d(24,32,5,stride=2)
+        self.conv3 = nn.Conv2d(32,64,5,stride=2)
+        self.conv4 = nn.Conv2d(64,64,3,stride=1)
+        self.conv5 = nn.Conv2d(64,64,3,stride=1)
+        self.layer1 = nn.Sequential(
+            self.conv1, self.relu, self.dropout,
+            self.conv2, self.relu, self.dropout,
+            self.conv3, self.relu, self.dropout,
+            self.conv4, self.relu, self.dropout,
+            self.conv5, self.relu, self.dropout,
+        )
+
+        n_size = self._get_conv_output(input_dim)
+        print("Size of CV2FC: ",n_size)
+
+        #self.fc1 = nn.Linear(64 * 5 * 5, 100)
+        self.fc1 = nn.Linear(n_size, 100)
+        self.fc2 = nn.Linear(100, 50)      
+        self.fc3 = nn.Linear(50, output_dim)
+        self.layer2 = nn.Sequential(
+            self.fc1, self.relu, self.dropout,
+            self.fc2, self.relu, self.dropout,
+            self.fc3
+        )
+
+    def _get_conv_output(self, shape):
+        print("shape: ",shape[0],shape[1],shape[2])
+        input = torch.autograd.Variable(torch.rand(1, 3, shape[1], shape[0]))
+        output_feat = self.layer1(input)
+        n_size = output_feat.data.view(1, -1).size(1)
+        return n_size
+
+    def forward(self, x):
+            x = self.layer1(x)
+            x = x.view(x.size()[0], -1)
+            x = self.layer2(x)
+            return x
+
+    def predict(self, model, x_tensor):
+        model.eval()  # モデルを評価モードに設定
+        with torch.no_grad():
+            predictions = model(x_tensor)
+            if config.model_type == "categorical":
+                predictions = torch.argmax(predictions, dim=1)
+                #print("predictions:",predictions)
+                predictions[0] = config.categories_Str[predictions[0]]/100
+                #predictions[1] = config.categories_Str[predictions[1]]/100
+                predictions = torch.tensor([[predictions[0],config.categories_Thr[predictions[0]]/100]])
+            else: predictions[:,0] = steering_shifter_to_m11(predictions[:,0]) # 0~1を-1~1に変換
+        predictions = torch.clamp(predictions, min=-1, max=1)  # Clamp values between -1 and 1
+        return predictions
+
+    def predict_label(self, model, x_tensor):
+        model.eval()  # モデルを評価モードに設定
+        with torch.no_grad():
+            predictions = model(x_tensor)
+            predictions = torch.argmax(predictions, dim=1)
+            #print("predictions:",predictions)
+        return predictions
+
 
 # トレーニング関数
-def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=config.epochs):
+def train_model(model, dataloader, criterion, optimizer, model_name, start_epoch=0, epochs=config.epochs):
     model.train()  # モデルをトレーニングモードに設定
     loss_history = []  # Loss values for plotting
     for epoch in range(start_epoch, start_epoch + epochs):
@@ -187,7 +307,7 @@ def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=c
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    loss_history_path = config.model_dir+'/'+'loss_history.png'
+    loss_history_path = config.model_dir+'/'+ model_name +'loss_history.png'
     plt.savefig(loss_history_path)
     plt.close()
     print("Lossの履歴を保存しました: "+loss_history_path)
@@ -195,11 +315,10 @@ def train_model(model, dataloader, criterion, optimizer, start_epoch=0, epochs=c
     
 
 # モデル保存関数
-def save_model(model, optimizer, folder, csv_file, epoch):
+#def save_model(model, optimizer, folder, csv_file, epoch):
+def save_model(model, optimizer, folder, model_name, epoch):
     if not os.path.exists(folder):
         os.makedirs(folder)
-    date_str = datetime.datetime.now().strftime('%Y%m%d')
-    model_name = f'model_{date_str}_{csv_file}_epoch_{epoch}_{config.ultrasonics_list_join}.pth'
     model_path = os.path.join(folder, model_name)
     torch.save({
         'epoch': epoch,
@@ -299,16 +418,28 @@ def test_model(model, model_path, dataset,sample_num=5):
 
 def main():
     # データのロード
-    x_tensor, y_tensor, csv_file = load_data()
+    x_tensor, y_tensor, csv_file, ts = load_data()
     
-    # データセットとデータローダーの作成
-    dataset = CustomDataset(x_tensor, y_tensor)
-    dataloader = DataLoader(dataset, batch_size=config.batch_size, shuffle=True)
-    
-    # モデルの作成
-    input_dim = x_tensor.shape[1]
-    output_dim = y_tensor.shape[1]
-    model = NeuralNetwork(input_dim, output_dim, config.hidden_dim, config.num_hidden_layers)
+    # データセットとデータローダーの作成, モデルの作成
+    if config.mode_plan == "NN":
+        dataset = CustomDataset(x_tensor, y_tensor)
+        dataloader = DataLoader(dataset, batch_size=config.batch_size, shuffle=True)
+        input_dim = x_tensor.shape[1]
+        output_dim = y_tensor.shape[1]
+        model = NeuralNetwork(input_dim, output_dim, config.hidden_dim, config.num_hidden_layers)
+    elif config.mode_plan == "CNN":
+        transform = transforms.Compose([
+            transforms.Resize((160, 120)),
+            transforms.ToTensor(),
+        ])
+        dataset = CustomImageDataset(root_dir="images", y_tensor=y_tensor, ts=ts, transform=transform)
+        dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+        input_dim = (config.IMAGE_W, config.IMAGE_H, config.IMAGE_DEPTH)
+        output_dim = y_tensor.shape[1]
+        model = ConvolutionalNeuralNetwork(input_dim, output_dim)
+    else: 
+        print("学習モデルが選択されていません。config.pyのmode_planを設定してください。")
+        sys.exit()
     print("モデル構造: ",model)
 
     # 損失関数と最適化手法の設定
@@ -328,11 +459,18 @@ def main():
     try: epochs = int(input(f"学習するエポック数を入力してください.(デフォルト:{config.epochs}): ").strip())
     except ValueError: epochs = config.epochs
     
+
+    # モデルの保存名
+    date_str = datetime.datetime.now().strftime('%Y%m%d')
+    model_name = f'model_{date_str}_{csv_file}.pth'.replace(".csv","")
+
     # モデルのトレーニング
-    epoch = train_model(model, dataloader, criterion, optimizer, start_epoch=start_epoch, epochs=epochs)
+    #epoch = train_model(model, dataloader, criterion, optimizer, start_epoch=start_epoch, epochs=epochs)
+    epoch = train_model(model, dataloader, criterion, optimizer, model_name, start_epoch=start_epoch, epochs=epochs)
     
     # モデルの保存
-    model_path = save_model(model, optimizer, 'models', csv_file, epoch)
+    #model_path = save_model(model, optimizer, 'models', csv_file, epoch)
+    model_path = save_model(model, optimizer, 'models', model_name, epoch)
     
     # モデルのテスト
     test_model(model, model_path,dataset)

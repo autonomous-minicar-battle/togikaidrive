@@ -113,10 +113,10 @@ class VideoCaptureWrapper:
             pass
 
     #def save(self, img, img_sh, ts, steer, throttle,  image_dir):
-    def save(self, img,  ts, steer, throttle,  image_dir):
+    def save(self, img,  ts, steer, throttle,  image_dir, img_size_w, img_size_h):
         try:
-            cv2.imwrite(image_dir +'/' + str(ts)[:13] +'_'+ str(steer) +'_'+ str(throttle) +'.jpg', img)            
-            #img = cv2.resize(img, (160, 120))
+            img = cv2.resize(img, (img_size_w, img_size_h))
+            cv2.imwrite(image_dir +'/' + ts +'_'+ str(steer) +'_'+ str(throttle) +'.jpg', img)            
             #img_sh[:] = img.flatten()
             return img
         except:
