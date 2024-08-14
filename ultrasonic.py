@@ -6,50 +6,151 @@ import numpy as np
 
 class Ultrasonic:
     def __init__(self, name):
+        # 超音波センサ(HC-SR04)のクラス作成
+        # データシート参考：https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
         # 超音波発信/受信用のGPiOピン番号
         self.name = name
         self.trig = config.ultrasonics_dict_trig[name]
         self.echo = config.ultrasonics_dict_echo[name]
         self.records = np.zeros(config.ultrasonics_Nrecords)
-        self.dis = 0
-
+        self.distance = 0
+        self.ultrasonicspeed = 343 #m/s
+        self.cutoff = config.cutoff_distance
+        self.cutofftime = self.cutoff/1000 /(self.ultrasonicspeed) #s
+        
     # 障害物センサ測定関数
     def measure(self):
-        self.dis = 0
-        sigoff = 0
-        sigon = 0
+        self.distance, sigoff, sigon = 0, 0, 0
+        # 10usのトリガー信号を送信
         GPIO.output(self.trig,GPIO.HIGH)
         time.sleep(0.00001)
         GPIO.output(self.trig,GPIO.LOW)
+        # エコー信号の立ち下がりと立ち上がりの時間を記録
         starttime=time.perf_counter()
         while(GPIO.input(self.echo)==GPIO.LOW):
             sigoff=time.perf_counter()
             if sigoff - starttime > 0.02: 
-            #     print("break1")
                 break
+        # エコー信号の立ち上がり時間が音速の往復時間
         while(GPIO.input(self.echo)==GPIO.HIGH):
             sigon=time.perf_counter()
-            if sigon - sigoff > 0.02: 
+            if sigon - sigoff > self.cutofftime: 
+                break
+        # time * sound speed / 2(round trip)
+        d = int((sigon - sigoff) * self.ultrasonicspeed / 2 *1000)
+        # 負値のノイズの場合は一つ前のデータに置き換え
+        if d < 0:
+            print("@",self.name,", a noise occureed, use the last value")
+            self.distance = self.records[0]
+            print(self.records)
+        else:
+            self.distance = d
+        # 過去の超音波センサの値を記録の一番前に挿入し、最後を消す
+        self.records = np.insert(self.records, 0, self.distance)
+        self.records = np.delete(self.records,-1)
+        return self.distance
+
+
+class Ultrasonic_donkeycar:
+    '''
+    donkeycarで使う超音波センサのクラス作成。下記参考
+    https://docs.donkeycar.com/parts/about/
+    '''
+    import logging
+    logger = logging.getLogger("donkeycar.parts.ultrasonic")
+    def __init__(self, ultrasonics_list, t_list, e_list, cutoff, poll_delay=0.0,batch_ms=50 ):
+        import time
+        import RPi.GPIO as GPIO
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(t_list,GPIO.OUT,initial=GPIO.LOW)
+        GPIO.setup(e_list,GPIO.IN)
+
+        self.cutoff = cutoff*2  # mm, round trip
+        self.ultrasonicspeed = 343 #speed of sound in m/s
+        self.cutofftime = self.cutoff/1000 /(self.ultrasonicspeed) #s 
+        self.ultrasonics = []
+        self.ultrasonics_list = ultrasonics_list
+        self.t_list = t_list
+        self.e_list = e_list
+        self.logger.info(" USE ULTRASONIC SENSORS: ", self.ultrasonics_list)
+
+        self.distances = [0]*len(ultrasonics_list) #a list of distance measurements
+        self.distances_records = [[0]*len(ultrasonics_list) for i in range(3)]
+
+        self.poll_delay = poll_delay
+        self.measurement_batch_ms = batch_ms
+        self.running = True
+        self.on = True
+
+        self.Nrecords = 3
+
+    def poll(self):
+        if self.running:
+            try:
+                for i in self.ultrasonics_list:
+                    self.distances[i] = self.measure(i,self.t_list[i], self.e_list[i])
+                self.distances_records[0:self.Nrecords-1]= self.distances_records[1:self.Nrecords]
+                self.distances_records[self.Nrecords-1] = self.distances
+                time.sleep(self.poll_delay)
+            except Exception as e:
+                self.logger.error("Error in ultrasonic poll() - {}".format(e))
+
+
+    def measure(self, i, trig, echo):
+        distance, sigoff, sigon = 0, 0, 0
+        GPIO.output(trig,GPIO.HIGH)
+        time.sleep(0.00001) #10us
+        GPIO.output(trig,GPIO.LOW)
+        starttime=time.perf_counter()
+        while(GPIO.input(echo)==GPIO.LOW):
+            sigoff=time.perf_counter()
+            if sigoff - starttime > 0.0005:
+            #     print("break1")
+                break
+        sigoff=time.perf_counter()
+        while(GPIO.input(echo)==GPIO.HIGH):
+            sigon=time.perf_counter()
+            # more than 0.06s suggested for next cycle of 1 sensor
+            if sigon - sigoff > self.cutofftime: 
             #     print("break2")
                 break
         # time * sound speed / 2(round trip)
-        d = int((sigon - sigoff)*340000/2)
-        # 2m以上は無視
-        if d > 2000:
-            self.dis = 2000
-            #print("more than 2m!")
-        # 負値のノイズの場合は一つ前のデータに置き換え
-        elif d < 0:
-            print("@",self.name,", a noise occureed, use the last value")
-            self.dis = self.records[0]
-            print(self.records)
+        d = int((sigon - sigoff)/1000 * self.ultrasonicspeed / 2)
+        # noise data replaced by old data
+        if d < 0:
+            self.logger.warning("@",self.ultrasonics_list[i],", a noise occureed, use the last value")
+            distance = self.distances_records[-1][i]
         else:
-            self.dis = d
-        # 過去の超音波センサの値を記録の一番前に挿入し、最後を消す
-        self.records = np.insert(self.records, 0, self.dis)
-        self.records = np.delete(self.records,-1)
-        return self.dis
+            distance = d
+        return distance
 
+    def update(self):
+        while self.running:
+            self.poll()
+            time.sleep(0)  # yield time to other threads
+
+    def run_threaded(self):
+        if self.running:
+            return self.distances
+        return []
+    
+    def run(self):
+        if not self.running:
+            return []
+        batch_time = time.time() + self.measurement_batch_ms / 1000.0
+        while True:
+            self.poll()
+            time.sleep(0)  # yield time to other threads
+            if time.time() >= batch_time:
+                break
+        return self.distances
+    
+    def shutdown(self):
+        self.running = False
+        GPIO.cleanup()
+        time.sleep(0.5)
+        
         
 if __name__ == "__main__":
     import config

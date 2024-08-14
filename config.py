@@ -34,8 +34,11 @@ K_D = 0.3 #0.3
 model_plan_list = ["GoStraight",
                    "Right_Left_3","Right_Left_3_Records",
                    "RightHand","RightHand_PID","LeftHand","LeftHand_PID",
-                   "NN"]
-mode_plan = "Right_Left_3"
+                   "NN", "CNN"]
+mode_plan = "CNN"
+print("mode_plan:",mode_plan)
+if mode_plan not in model_plan_list:
+    print("Please set mode_plan as ",model_plan_list)
 
 # 判断モード関連パラメータ
 ## 過去の操作値記録回数
@@ -82,9 +85,12 @@ ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 ### ほかのファイルで使うためリスト接続名
 ultrasonics_list_join = "uls_"+"_".join(ultrasonics_list)
 
+
+## 超音波センサの最大測定距離(mm)、往復
+cutoff_distance = 4000 
 ## 超音波センサの測定回数、ultrasonic.pyチェック用
 sampling_times = 100
-## 目標サンプリング周期（何秒に１回）、複数センサ利用の場合は合計値、
+## 目標サンプリング周期（何秒に１回）、複数センサ利用の場合は合計値
 sampling_cycle = 0.01
 ## 過去の超音波センサの値記録回数
 ultrasonics_Nrecords = 3
@@ -121,15 +127,18 @@ N_ultrasonics = len(ultrasonics_list)
 
 # NNパラメータ
 HAVE_NN = False
-if mode_plan == "NN": HAVE_NN = True
+if mode_plan in ["NN", "CNN"] : HAVE_NN = True
 
 ## 学習済みモデルのパス
 model_dir = "models"
 model_name = "model_20240715_record_20240714_233107.csv_epoch_1_uls_RrLH_FrLH_Fr_FrRH_RrRH.pth"
 model_path = os.path.join(model_dir, model_name)
-## モデルと学習のハイパーパラメータ設定
+
+## NNモデルのパラメータ
 hidden_dim = 64 #（隠れ層のノード数）
 num_hidden_layers = 3 #（隠れ層の数）
+
+## 学習のハイパーパラメータ
 batch_size = 8
 epochs = 30
 
@@ -139,7 +148,7 @@ model_type = "linear" #linear, categorical
 num_categories = 3
 # -100~100の範囲で小さな値→大きな値の順にする（しないとValueError: bins must increase monotonically.）
 categories_Str = [RIGHT, NUTRAL, LEFT]
-categories_Thr = [FORWARD_C, FORWARD_S, FORWARD_C] #Strに合わせて設定
+categories_Thr = [FORWARD_C, FORWARD_S, FORWARD_C] #Strのカテゴリに合わせて設定
 
 bins_Str = [-101] # -101は最小値-100を含むため設定、境界の最大値は100
 #bins_Thr = [-101]

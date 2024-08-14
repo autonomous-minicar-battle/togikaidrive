@@ -2,7 +2,7 @@
 import numpy as np
 import config
 import time
-if config.HAVE_NN: 
+if config.mode_plan in ["NN","CNN"]:
     import torch.tensor
     from train_pytorch import denormalize_motor, normalize_ultrasonics 
 
@@ -201,14 +201,24 @@ class Planner:
         return steer_pwm_duty_pid*self.steer_pwm_duty, self.throttle_pwm_duty
 
     # Neural Netを用いた走行
-    if config.HAVE_NN:
-        # train_pytorch.py内ので正規化処理を用いる
-        def NN(self, model, *args):
-            ultrasonic_values = args
-            input = normalize_ultrasonics(torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0))
-            output = denormalize_motor(model.predict(model, input).squeeze(0))
-            self.steer_pwm_duty = int(output[0])
-            self.throttle_pwm_duty = int(output[1])
+    # train_pytorch.py内の正規化処理を用いる
+    def NN(self, model, *args):
+        ultrasonic_values = args
+        input = normalize_ultrasonics(torch.tensor(ultrasonic_values, dtype=torch.float32).unsqueeze(0))
+        output = denormalize_motor(model.predict(model, input).squeeze(0))
+        self.steer_pwm_duty = int(output[0])
+        self.throttle_pwm_duty = int(output[1])
 
-            ## モーターへ出力を返す
-            return self.steer_pwm_duty, self.throttle_pwm_duty
+        ## モーターへ出力を返す
+        return self.steer_pwm_duty, self.throttle_pwm_duty
+    
+    def CNN(self, model, img):
+        # train_pytorch.py内の正規化処理を用いる
+        input = img
+        output = denormalize_motor(model.predict(model, input).squeeze(0))
+        self.steer_pwm_duty = int(output[0])
+        self.throttle_pwm_duty = int(output[1])
+
+        ## モーターへ出力を返す
+        return self.steer_pwm_duty, self.throttle_pwm_duty
+
