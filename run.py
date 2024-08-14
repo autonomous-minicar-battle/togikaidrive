@@ -2,7 +2,7 @@
 if __name__ == "__main__":
     #　myparam_run.pyで２重にimportされるのを防ぐ
     import config
-if not __name__ == "__main__":
+else:
     #　myparam_run.pyから起動したときにmyparam_run.pyのconfigを使う
     import myparam_run
     config = myparam_run.config
@@ -103,7 +103,6 @@ if config.HAVE_IMU:
 # コントローラーの初期化
 if config.HAVE_CONTROLLER:
     joystick = joystick.Joystick()
-    if joystick.HAVE_CONTROLLER == False: config.HAVE_CONTROLLER = False
     mode = joystick.mode[0]
     print("Starting mode: ",mode)
 
@@ -125,13 +124,13 @@ start_time = time.time()
 try:
     while True:
         # 認知（計測） ＃
-        ## RrRHセンサ距離計測例：dis_RrRH = ultrasonic_RrRH.()
+        ## RrRHセンサ距離計測例：distance_RrRH = ultrasonic_RrRH.()
         ## 下記では一気に取得
         message = ""
         for i, name in enumerate(config.ultrasonics_list):
             d[i] = ultrasonics[name].measure()
-            #message += name + ":" + str(round(ultrasonics[name].dis,2)).rjust(7, ' ') #Thony表示用にprint変更
-            message += name + ":" + "{:>4}".format(round(ultrasonics[name].dis))+ ", "
+            #message += name + ":" + str(round(ultrasonics[name].distance,2)).rjust(7, ' ') #Thony表示用にprint変更
+            message += name + ":" + "{:>4}".format(round(ultrasonics[name].distance))+ ", "
             # サンプリングレートを調整する場合は下記をコメントアウト外す
             #time.sleep(sampling_cycle)
 
@@ -142,16 +141,16 @@ try:
             steer_pwm_duty,throttle_pwm_duty = 0, config.FORWARD_S
         ## 右左空いているほうに走る 
         elif config.mode_plan == "Right_Left_3":
-            steer_pwm_duty,throttle_pwm_duty = plan.Right_Left_3(ultrasonics["FrLH"].dis, ultrasonics["Fr"].dis, ultrasonics["FrRH"].dis)
+            steer_pwm_duty,throttle_pwm_duty = plan.Right_Left_3(ultrasonics["FrLH"].distance, ultrasonics["Fr"].distance, ultrasonics["FrRH"].distance)
         ## 過去の値を使ってスムーズに走る
         elif config.mode_plan == "Right_Left_3_Records":
-            steer_pwm_duty, throttle_pwm_duty  = plan.Right_Left_3_Records(ultrasonics["FrLH"].dis, ultrasonics["Fr"].dis, ultrasonics["FrRH"].dis)
+            steer_pwm_duty, throttle_pwm_duty  = plan.Right_Left_3_Records(ultrasonics["FrLH"].distance, ultrasonics["Fr"].distance, ultrasonics["FrRH"].distance)
         ## 右手法で走る
         elif config.mode_plan == "RightHand":
-            steer_pwm_duty, throttle_pwm_duty  = plan.RightHand(ultrasonics["FrRH"].dis, ultrasonics["RrRH"].dis)
+            steer_pwm_duty, throttle_pwm_duty  = plan.RightHand(ultrasonics["FrRH"].distance, ultrasonics["RrRH"].distance)
         ## 左手法で走る
         elif config.mode_plan == "LeftHand":
-            steer_pwm_duty, throttle_pwm_duty  = plan.LeftHand(ultrasonics["FrLH"].dis, ultrasonics["RrLH"].dis)
+            steer_pwm_duty, throttle_pwm_duty  = plan.LeftHand(ultrasonics["FrLH"].distance, ultrasonics["RrLH"].distance)
         ## 右手法にPID制御を使ってスムーズに走る
         elif config.mode_plan == "RightHand_PID":
             steer_pwm_duty, throttle_pwm_duty  = plan.RightHand_PID(ultrasonics["FrRH"], ultrasonics["RrRH"])
@@ -161,9 +160,9 @@ try:
         ## ニューラルネットを使ってスムーズに走る
         elif config.mode_plan == "NN":
             # 超音波センサ入力が変更できるように引数をリストにして渡す形に変更
-            args = [ultrasonics[key].dis for key in config.ultrasonics_list]
+            args = [ultrasonics[key].distance for key in config.ultrasonics_list]
             steer_pwm_duty, throttle_pwm_duty = plan.NN(model, *args)
-            #steer_pwm_duty, throttle_pwm_duty  = plan.NN(model, ultrasonics["FrLH"].dis, ultrasonics["Fr"].dis, ultrasonics["FrRH"].dis)
+            #steer_pwm_duty, throttle_pwm_duty  = plan.NN(model, ultrasonics["FrLH"].distance, ultrasonics["Fr"].distance, ultrasonics["FrRH"].distance)
         ## CNNを使ってスムーズに走る
         # 評価中
         elif config.mode_plan == "CNN":

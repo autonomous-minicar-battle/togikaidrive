@@ -85,9 +85,12 @@ ultrasonics_list = ["RrLH", "FrLH", "Fr", "FrRH","RrRH"]
 ### ほかのファイルで使うためリスト接続名
 ultrasonics_list_join = "uls_"+"_".join(ultrasonics_list)
 
+
+## 超音波センサの最大測定距離(mm)、往復
+cutoff_distance = 4000 
 ## 超音波センサの測定回数、ultrasonic.pyチェック用
 sampling_times = 100
-## 目標サンプリング周期（何秒に１回）、複数センサ利用の場合は合計値、
+## 目標サンプリング周期（何秒に１回）、複数センサ利用の場合は合計値
 sampling_cycle = 0.01
 ## 過去の超音波センサの値記録回数
 ultrasonics_Nrecords = 3
