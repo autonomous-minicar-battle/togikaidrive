@@ -176,13 +176,11 @@ planner.pyとrun.pyを各自変更
 
 ### 走行実習
 myparam_run.py内のパラメータを変更し、パラメータの変更による走行の変化を体験する
-#### コース：愛知県コース（切り返しが必要になる）
- 
->TODO: 愛知県コースの絵
+#### コース例1：オーバルコース
+![オーバルコース](assets/images/course_oval.jpg) 
 
-#### コース：オーバルコース（NNの走行がスムーズになりやすい）
- 
->TODO: オーバルコースの絵
+#### コース例2：愛知県コース（切り返しが必要になる）
+![出前コース図2024](assets/images/course_demae_2024.png) 
 
 ### 分析実習
    1. 超音波センサの値を確認しよう（実測値のバラツキ）    
@@ -268,8 +266,8 @@ myparam_run.py内のパラメータを変更し、パラメータの変更によ
 
 #### 環境構築
 ##### 選択肢１：既存のイメージをベースに環境構築
-下記を実施したイメージは[こちら]()
->TODO: GDriveで配信
+＊下記を実施したイメージは[こちら](https://drive.google.com/file/d/1ZqGgFi4mQTyPfrCvmbbtQDZ6XFocCwr1/view?usp=drive_link)
+3GB程の要領で、ダウンロードする際にGoogleDriveから警告がある。
 
 1. [リンク](https://drive.google.com/file/d/1uiUkqMNAAhONLD7ZHmhPery9QN9qlK32/view?usp=sharing)先をダウンロードしイメージをSDカードに焼く。
 詳細は[参照](https://faboplatform.github.io/DonkeyDocs/7.SD%E3%82%AB%E3%83%BC%E3%83%89%E4%BD%9C%E6%88%90/01.os_install/)
@@ -403,7 +401,6 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       '1.7.0a0+e85d494'
       >>> torchvision.__version__
       '0.8.0a0+45f960c'
-      >>> exit()      
       ~~~
 
    4. [matplot](https://pypi.org/project/matplotlib/)
@@ -412,18 +409,18 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       pip install matplotlib
       ~~~
 
-   4. [Adafruit_PCA9685](https://github.com/adafruit/Adafruit_Python_PCA9685)
+   5. [Adafruit_PCA9685](https://github.com/adafruit/Adafruit_Python_PCA9685)
       モーターを動かすのに使います。  
       ~~~
       pip install Adafruit_PCA9685
       ~~~
-   5. [pygame](https://pypi.org/project/pygame/) コントローラーを使うときに使います。
+   6. [pygame](https://pypi.org/project/pygame/) コントローラーを使うときに使います。
       ~~~
       sudo apt install lightdm libsdl2-2.0-0 
       pip install pygame
       ~~~
    
-   5. ジャイロに挑戦する方はインストール　たくさん種類があります。  
+   7. ジャイロに挑戦する方はインストール　たくさん種類があります。  
 
       - [BNO055使用 9軸センサーフュージョンモジュールキット](https://akizukidenshi.com/catalog/g/g116996/)、togikai基盤にそのまま乗ります。  
       [参考](https://github.com/ghirlekar/bno055-python-i2c) 
@@ -450,48 +447,98 @@ busterのpythonはデフォルトではpython2系になっているので、pyth
       python BNO055.py
       ~~~
 
-   6. oledディスプレイの設定
+   8. oledディスプレイの設定
       - rc.localがある場合  
       https://github.com/FaBoPlatform/ip_address_display
       - rc.localがない場合
    https://qiita.com/karaage0703/items/ed18f318a1775b28eab4#systemd-%E3%82%92%E4%BD%BF%E3%81%86%E6%96%B9%E6%B3%95
 
-   7. donkeycar(ver. 4.4.0)をインストール
-   [公式ドキュメント](https://docs.donkeycar.com/guide/robot_sbc/setup_raspberry_pi/)　
+   9. OSSのdonkeycar(ver. 4.4.0)を使う
+      >TODO: 講座スライドを入れる
 
-      1. 依存環境セットアップ
-      ~~~
-      sudo apt-get install build-essential python3 python3-dev python3-pip python3-virtualenv python3-numpy python3-picamera python3-pandas python3-rpi.gpio i2c-tools avahi-utils joystick libopenjp2-7-dev libtiff5-dev gfortran libatlas-base-dev libopenblas-dev libhdf5-serial-dev libgeos-dev git ntp
-      ~~~
+      1. 環境設定（制限部門配布マシンにはラズパイ版ver. 4.4.0がインストール済み）
+      [公式ドキュメント](https://docs.donkeycar.com/guide/robot_sbc/setup_raspberry_pi/)　
 
-      2. 仮想環境セットアップ
-      ~~~
-      python3 -m virtualenv -p python3 env --system-site-packages
-      echo "source ~/env/bin/activate" >> ~/.bashrc
-      source ~/.bashrc
-      ~~~
+         1. 依存環境セットアップ
+         ~~~
+         sudo apt-get install build-essential python3 python3-dev python3-pip python3-virtualenv python3-numpy python3-picamera python3-pandas python3-rpi.gpio i2c-tools avahi-utils joystick libopenjp2-7-dev libtiff5-dev gfortran libatlas-base-dev libopenblas-dev libhdf5-serial-dev libgeos-dev git ntp
+         ~~~
 
-      3. プロジェクトをまとめるフォルダ作成し、移動 
-      ~~~
-      mkdir projects
-      cd projects
-      ~~~
-      4. gitでdonkeycarプロジェクトを取ってくる
-      ~~~
-      git clone https://github.com/autorope/donkeycar
-      cd donkeycar
-      git fetch --all --tags -f
-      git checkout 4.4.0
-      pip install -e .[pi]
-      pip install https://github.com/lhelontra/tensorflow-on-arm/releases/download/v2.2.0/tensorflow-2.2.0-cp37-none-linux_armv7l.whl      
-      ~~~
-      5. コマンドを打って確認、エラーが出なければOK
-      ~~~
-      donkey
-      ~~~
+         2. 仮想環境セットアップ
+         ~~~
+         python3 -m virtualenv -p python3 env --system-site-packages
+         echo "source ~/env/bin/activate" >> ~/.bashrc
+         source ~/.bashrc
+         ~~~
+
+         3. プロジェクトをまとめるフォルダ作成し、移動 
+         ~~~
+         mkdir projects
+         cd projects
+         ~~~
+         4. gitでdonkeycarプロジェクトを取ってくる
+         ~~~
+         git clone https://github.com/autorope/donkeycar
+         cd donkeycar
+         git fetch --all --tags -f
+         git checkout 4.4.0
+         pip install -e .[pi]
+         pip install https://github.com/lhelontra/tensorflow-on-arm/releases/download/v2.2.0/tensorflow-2.2.0-cp37-none-linux_armv7l.whl      
+         ~~~
+         5. コマンドを打って確認、下記のような表示とエラーが出なければOK
+         ~~~
+         donkey
+         ________             ______                   _________
+         ___  __ \_______________  /___________  __    __  ____/_____ ________
+         __  / / /  __ \_  __ \_  //_/  _ \_  / / /    _  /    _  __ `/_  ___/
+         _  /_/ // /_/ /  / / /  ,<  /  __/  /_/ /     / /___  / /_/ /_  /
+         /_____/ \____//_/ /_//_/|_| \___/_\__, /      \____/  \__,_/ /_/
+                                          /____/
+
+         using donkey v4.4.0 ...
+         Usage: The available commands are:
+         ['createcar', 'findcar', 'calibrate', 'tubclean', 'tubplot', 'tubhist', 'makemovie', 'createjs', 'cnnactivations', 'update', 'train', 'models', 'ui']
+         
+         ~~~
+
+      2. 学習
+         1. 学習環境
+
+            |  | ローカルPC | クラウド |
+            |----------|----------|----------|
+            | 導入コスト   | ✖ PC購入   | ○   |
+            | ランニングコスト   | ○   | ✖ ネットワーク費用  |
+            | データ転送   | ○   | ✖ インターネットへの転送時間  |
+            | 学習速度   | ▲PCによる   | ▲インスタンスによる  |
+            | 所要時間   | ○   | ✖   |
+            
+            総評：練習時間やレースまでの準備時間が限られていること、継続的なAIやプログラミングの学習をするのであれば、PCを準備することをお勧めします。
+
+            > [!NOTE]
+            > Donkeycarはデフォルトでは小さなモデルを利用していますので、比較的ライトGPU付PCで学習可能です。ローカルPCは筆者経験上MX230以上の搭載ノートPC、例えばInspiron 5491等であれば問題なく学習やコース現場での作業ができます。勿論大きなモデルの学習やCAD等の他の用途があればそれ以上の高性能PCを準備できれば尚良いです。
+         
+         2. ローカルPCで学習する場合
+            下記URLを参考に環境をセットアップし、学習をしてください。
+            https://docs.donkeycar.com/guide/install_software/#step-1-install-software-on-host-pc
+         
+         3. クラウドで学習する場合
+            下記を参考に4.4.0をGoogle Colab上で学習します。[ノートブック](.\DonkeyCar_4_4_Training_Tensorflow_2_2_0_20230719_JP.ipynb)はtogikaidrive内にも保存されていますので、ご自身のDriveにアップロードし、
+            https://faboplatform.github.io/DonkeyDocs/7.SD%E3%82%AB%E3%83%BC%E3%83%89%E4%BD%9C%E6%88%90/02.donkey4/
+            
+      3. Donkeycarの改造
+         1. 超音波センサを追加して自動復帰ロジックを組み込む
+            >TODO: 講座スライドを入れる
+      
+         2. IMUで周回検知して走行モデルを切替える
+            >TODO: 講座スライドを入れる
       
 
-## その他ツール類（開発ツール講座で一部紹介予定）
+
+
+
+
+
+## その他ツール類（講座で紹介）
 - エディター：[VS Code](https://code.visualstudio.com/) 
 - コード管理：[Git](https://git-scm.com/) 
 - コード配布：[GitHub](https://github.com/) 
