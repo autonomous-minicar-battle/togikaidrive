@@ -350,18 +350,18 @@ PWM_STEERING_THROTTLE = {
 # TFMINI_SERIAL_PORT = "/dev/serial0" # tfmini serial port, can be wired up or use usb/serial adapter
 # 
 
-### add for ultrasonic sensor 20240812HK
+### add for ultrasonic sensor 
 # # #ULTRASONIC
 HAVE_ULTRASONIC = True
-ULTRASONIC_DISTANCE_CUTOFF = 3000
-ULTRASONIC_LIST = ["Fr", "FrRH","FrLH"]
+ULTRASONIC_DISTANCE_CUTOFF = 1000
+ULTRASONIC_LIST = ["FrLH","Fr", "FrRH"]
 #ULTRASONIC_LIST = ["Fr", "FrRH","FrLH", "RrRH", "RrLH"]
 ULTRASONIC_ECHO = [11,13,15,29,31,33,35,37]
 ULTRASONIC_TRIG = [12,16,18,22,32,36,38,40]
 ULTRASONIC_PRINT_INTERVAL = 20
 #  # #RECOVERY SETTING
-RECOVERY_DISTANCE = 150 # mm
-RECOVERY_DETECTION_TIMES = 3
+RECOVERY_DISTANCE = 200 # mm
+RECOVERY_DETECTION_TIMES = 3 #how many detections needed before recovery action
 RECOVERY_DURATION = 0.5 # seconds
 ###
 

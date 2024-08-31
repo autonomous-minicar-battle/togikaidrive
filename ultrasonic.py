@@ -26,16 +26,18 @@ class Ultrasonic:
         time.sleep(0.00001)
         GPIO.output(self.trig,GPIO.LOW)
         # エコー信号の立ち下がりと立ち上がりの時間を記録
-        starttime=time.perf_counter()
+        starttime=time.perf_counter() ###
         while(GPIO.input(self.echo)==GPIO.LOW):
             sigoff=time.perf_counter()
             if sigoff - starttime > 0.02: 
                 break
+        sigoff=time.perf_counter()
         # エコー信号の立ち上がり時間が音速の往復時間
         while(GPIO.input(self.echo)==GPIO.HIGH):
             sigon=time.perf_counter()
             if sigon - sigoff > self.cutofftime: 
                 break
+        sigon=time.perf_counter() ###
         # time * sound speed / 2(round trip)
         d = int((sigon - sigoff) * self.ultrasonicspeed / 2 *1000)
         # 負値のノイズの場合は一つ前のデータに置き換え
@@ -58,7 +60,7 @@ class Ultrasonic_donkeycar:
     '''
     import logging
     logger = logging.getLogger("donkeycar.parts.ultrasonic")
-    def __init__(self, ultrasonics_list, t_list, e_list, cutoff, poll_delay=0.0,batch_ms=50 ):
+    def __init__(self, ultrasonics_list, t_list, e_list, cutoff, interval, poll_delay=0.016,batch_ms=50 ):
         import time
         import RPi.GPIO as GPIO
         GPIO.setwarnings(False)
@@ -73,11 +75,13 @@ class Ultrasonic_donkeycar:
         self.ultrasonics_list = ultrasonics_list
         self.t_list = t_list
         self.e_list = e_list
-        self.logger.info(" USE ULTRASONIC SENSORS: ", self.ultrasonics_list)
+        self.logger.info(" USE ULTRASONIC SENSORS: {}".format(self.ultrasonics_list))
 
         self.distances = [0]*len(ultrasonics_list) #a list of distance measurements
         self.distances_records = [[0]*len(ultrasonics_list) for i in range(3)]
 
+        self.interval = interval
+        self.count = 0
         self.poll_delay = poll_delay
         self.measurement_batch_ms = batch_ms
         self.running = True
@@ -88,11 +92,11 @@ class Ultrasonic_donkeycar:
     def poll(self):
         if self.running:
             try:
-                for i in self.ultrasonics_list:
+                for i in range(len(self.ultrasonics_list)):
                     self.distances[i] = self.measure(i,self.t_list[i], self.e_list[i])
                 self.distances_records[0:self.Nrecords-1]= self.distances_records[1:self.Nrecords]
                 self.distances_records[self.Nrecords-1] = self.distances
-                time.sleep(self.poll_delay)
+                #time.sleep(self.poll_delay)
             except Exception as e:
                 self.logger.error("Error in ultrasonic poll() - {}".format(e))
 
@@ -105,21 +109,22 @@ class Ultrasonic_donkeycar:
         starttime=time.perf_counter()
         while(GPIO.input(echo)==GPIO.LOW):
             sigoff=time.perf_counter()
-            if sigoff - starttime > 0.0005:
-            #     print("break1")
+            if sigoff - starttime > 0.02: #0.0005:
+                #print("break1")
                 break
         sigoff=time.perf_counter()
         while(GPIO.input(echo)==GPIO.HIGH):
             sigon=time.perf_counter()
             # more than 0.06s suggested for next cycle of 1 sensor
             if sigon - sigoff > self.cutofftime: 
-            #     print("break2")
+                #print("break2")
                 break
-        # time * sound speed / 2(round trip)
-        d = int((sigon - sigoff)/1000 * self.ultrasonicspeed / 2)
+        sigon=time.perf_counter()
+        # time * sound speed / 2(round trip) * 1000ms
+        d = int((sigon - sigoff) * self.ultrasonicspeed / 2 *1000)
         # noise data replaced by old data
         if d < 0:
-            self.logger.warning("@",self.ultrasonics_list[i],", a noise occureed, use the last value")
+            self.logger.warning("@{}, a noise occureed, use the last value".format(self.ultrasonics_list[i]))
             distance = self.distances_records[-1][i]
         else:
             distance = d
@@ -131,24 +136,32 @@ class Ultrasonic_donkeycar:
             time.sleep(0)  # yield time to other threads
 
     def run_threaded(self):
+        self.count += 1 
         if self.running:
+            if self.count % self.interval == 0:
+                print(self.distances, "print interval:",self.interval)
             return self.distances
         return []
     
     def run(self):
+        self.count += 1 
         if not self.running:
             return []
-        batch_time = time.time() + self.measurement_batch_ms / 1000.0
-        while True:
-            self.poll()
-            time.sleep(0)  # yield time to other threads
-            if time.time() >= batch_time:
-                break
+        #batch_time = time.time() + self.measurement_batch_ms / 1000.0
+        #while True:
+        #    self.poll()
+        #    time.sleep(0)  # yield time to other threads
+        #    if time.time() >= batch_time:
+        #        break
+        self.poll()
+        if self.count % self.interval == 0:
+            print(self.ultrasonics_list,"=",self.distances, "print interval: ",self.interval)
         return self.distances
     
     def shutdown(self):
         self.running = False
-        GPIO.cleanup()
+        GPIO.setmode(GPIO.BOARD)
+        #GPIO.cleanup()
         time.sleep(0.5)
         
         

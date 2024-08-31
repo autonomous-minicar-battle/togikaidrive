@@ -119,7 +119,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
         from ultrasonic import Ultrasonic_donkeycar
         print("adding ULTRASONIC part")
         ultrasonic = Ultrasonic_donkeycar(cfg.ULTRASONIC_LIST, cfg.ULTRASONIC_TRIG, cfg.ULTRASONIC_ECHO, cfg.ULTRASONIC_DISTANCE_CUTOFF, cfg.ULTRASONIC_PRINT_INTERVAL)
-        V.add(ultrasonic, inputs=[], outputs=['ultrasonic/dist_array'], threaded=False)
+        V.add(ultrasonic, inputs=[], outputs=['ultrasonic/dist_array'], threaded=True)
         #V.add(ultrasonic, inputs=['pilot/mode', 'pilot/angle', 'pilot/throttle'], outputs=['ultrasonic/dist_array'], threaded=False)
     ###
 
@@ -379,9 +379,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
         elif cfg.USE_LIDAR:
             inputs = ['cam/image_array', 'lidar/dist_array']
 
-        ### add for ultrasonic 20240731HK
-        elif cfg.HAVE_ULTRASONIC:
-            inputs = ['cam/image_array','ultrasonic/dist_array']        
+        ### add for ultrasonic 
+        #elif cfg.HAVE_ULTRASONIC:
+        #    inputs = ['cam/image_array','ultrasonic/dist_array']        
         ###
 
         elif cfg.HAVE_ODOM:
@@ -469,73 +469,83 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
 
     ### overrite new DriveMode for ultrasonic sensor 20240812HK
     # Choose what inputs should change the car.
-    class DriveMode:
-        def __init__(self):
-            self.recovery_distance = cfg.RECOVERY_DISTANCE
-            self.recovery_detection = 0
-            self.recovery_detection_times = cfg.RECOVERY_DETECTION_TIMES
-            self.recovery_on = 0
-            self.recovery_duration = cfg.RECOVERY_DURATION
-            self.recovery_start = time.time()
-            self.recovery_counter = 0
+    if cfg.HAVE_ULTRASONIC:
+        class DriveMode:
+            def __init__(self):
+                self.recovery_distance = cfg.RECOVERY_DISTANCE
+                self.recovery_detection = 0
+                self.recovery_detection_times = cfg.RECOVERY_DETECTION_TIMES
+                self.recovery_on = 0
+                self.recovery_duration = cfg.RECOVERY_DURATION
+                self.recovery_start = time.time()
+                self.recovery_counter = 0
 
-        def run(self, mode,
-                    user_angle, user_throttle,
-                    pilot_angle, pilot_throttle,
-                    ultrasonic_dist_array
-                    ):
-            if mode == 'user':
-                return user_angle, user_throttle
+            def run(self, mode,
+                        user_angle, user_throttle,
+                        pilot_angle, pilot_throttle,
+                        ultrasonic_dist_array
+                        ):
+                if mode == 'user':
+                    return user_angle, user_throttle
 
-            elif mode == 'local_angle':
-                return pilot_angle if pilot_angle else 0.0, user_throttle
+                elif mode == 'local_angle':
+                    return pilot_angle if pilot_angle else 0.0, user_throttle
 
-            elif mode == 'local_ultrasonic_recovery':
-                # parts/controller.pyに上記mode追加する
-                # リカバリーOFF
-                if not self.recovery_on:
-                    # 検知有無
-                    if min(ultrasonic_dist_array) < self.recovery_distance:
-                        self.recovery_detection = 1
-                    else: 
-                        self.recovery_detection = 0
-                        self.recovery_counter = 0
-                    # 検知有、検知数カウント
-                    if self.recovery_detection:
-                        self.recovery_counter += 1
-                        # 検知数カウント閾値超えでリカバリーON
-                        if self.recovery_counter > self.recovery_detection_times:
-                            self.recovery_on = 1
-                            self.recovery_start = time.time()
+                elif mode == 'local_ultrasonic_recovery':
+                    # 簡便のため、0/1　ベクトル化 
+                    self.detection = [i < self.recovery_distance for i in ultrasonic_dist_array]
+                    # parts/controller.pyに上記mode追加する
+                    # リカバリーOFF
+                    if not self.recovery_on:
+                        # 検知有無
+                        if min(ultrasonic_dist_array) < self.recovery_distance:
+                            self.recovery_detection = 1
+                        else: 
+                            self.recovery_detection = 0
+                            self.recovery_counter = 0
+                        # 検知有、検知数カウント
+                        if self.recovery_detection:
+                            self.recovery_counter += 1
+                            # 検知数カウント閾値超えでリカバリーON
+                            if self.recovery_counter > self.recovery_detection_times:
+                                self.recovery_on = 1
+                                self.recovery_start = time.time()
 
-                # リカバリーON
-                if self.recovery_on:
-                    print("*Recovery mode ON by using ultrasonic sensors*")
-                    duration = time.time() - self.recovery_start
-                    # リカバリー時間内
-                    if duration <  self.recovery_duration:
-                        pilot_angle = -1.0
-                        pilot_throttle = -1.0
-                    else: 
-                        print("*Recovery mode OFF*")
-                        self.recovery_on = 0
-                        self.recovery_detection = 0
-                        self.recovery_counter = 0
+                    # Recovery ON
+                    if self.recovery_on:
+                        print(self.detection,"*Recovery mode ON by using ultrasonic sensors*")
+                        duration = time.time() - self.recovery_start
+                        # while recovering
+                        if duration <  self.recovery_duration:
+                            # RL wall➔turn
+                            if self.detection[0] == 0: #case: [0,1,1]:
+                                pilot_angle = -1.0
+                            elif self.detection[2] == 0: #case: [1,1,0]:
+                                pilot_angle = 1.0
+                            # in front wall ➔backward
+                            else: #self.detection == [1,1,1]:
+                                pilot_angle = 0.0
+                                pilot_throttle = -1.0
+                        else: 
+                            print("*Recovery mode OFF*")
+                            self.recovery_on = 0
+                            self.recovery_detection = 0
+                            self.recovery_counter = 0
 
-                return pilot_angle if pilot_angle else 0.0, \
-                    pilot_throttle * cfg.AI_THROTTLE_MULT \
-                        if pilot_throttle else 0.0
+                    return pilot_angle if pilot_angle else 0.0, \
+                        pilot_throttle * cfg.AI_THROTTLE_MULT \
+                            if pilot_throttle else 0.0
 
-            else:
-                return pilot_angle if pilot_angle else 0.0, \
-                       pilot_throttle * cfg.AI_THROTTLE_MULT \
-                           if pilot_throttle else 0.0
+                else:
+                    return pilot_angle if pilot_angle else 0.0, \
+                        pilot_throttle * cfg.AI_THROTTLE_MULT \
+                            if pilot_throttle else 0.0
 
-    V.add(DriveMode(),
-          inputs=['user/mode', 'user/angle', 'user/throttle',
-                  'pilot/angle', 'pilot/throttle',
-                  'ultrasonic/dist_array'],
-          outputs=['angle', 'throttle'])
+        V.add(DriveMode(),
+            inputs=['user/mode', 'user/angle', 'user/throttle',
+                    'pilot/angle', 'pilot/throttle',
+                    'ultrasonic/dist_array'],
+            outputs=['angle', 'throttle'])
     ### 
 
 
